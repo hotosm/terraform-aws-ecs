@@ -57,7 +57,7 @@ variable "container_settings" {
 
   validation {
     condition = contains(
-      ["x86_64", "ARM64"],
+      ["X86_64", "ARM64"],
       lookup(var.container_settings, "cpu_architecture")
     )
     error_message = "Allowed CPU architectures are x86_64 and ARM64"
@@ -123,7 +123,7 @@ variable "log_configuration" {
       "syslog"
       ],
     lookup(var.log_configuration, "logdriver"))
-    error_message = "Please check logdriver value is valid"
+    error_message = "Valid values are awslogs, json-file, journald, gelf, fluentd, splunk, awsfirelens and syslog"
   }
 }
 
@@ -134,7 +134,7 @@ variable "linux_capabilities" {
     drop = ["NET_RAW", "NET_BIND_SERVICE", "SYS_CHROOT"]
   }
 
-/**
+  /**
   validation {
     condition = contains(
       [
