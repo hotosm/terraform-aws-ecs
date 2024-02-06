@@ -47,7 +47,7 @@ variable "container_envvars" {
 variable "container_settings" {
   type = object({
     service_name     = string
-    port             = number
+    app_port         = number
     image_url        = string
     image_tag        = string
     cpu_architecture = string
@@ -55,10 +55,10 @@ variable "container_settings" {
 
   default = {
     service_name     = ""
-    port             = 8000
+    app_port         = 8000
     image_url        = ""
     image_tag        = ""
-    cpu_architecture = "x86_64" // or ARM64
+    cpu_architecture = "X86_64" // or ARM64
   }
 
   validation {
@@ -96,7 +96,7 @@ variable "efs_settings" {
 }
 
 variable "tasks_count" {
-  type        = number
+  type        = map(number)
   description = "Desired count of replications for service"
 
   default = {
@@ -125,10 +125,25 @@ variable "log_configuration" {
       awslogs-stream-prefix = ""
     }
   }
+
+  validation {
+    condition = contains([
+      "json-file",
+      "journald",
+      "gelf",
+      "fluentd",
+      "awslogs",
+      "splunk",
+      "awsfirelens",
+      "syslog"
+      ],
+    lookup(var.log_configuration, "logdriver"))
+    error_message = "Please check logdriver value is valid"
+  }
 }
 
 variable "linux_capabilities" {
-  type = map(any)
+  type = map(list(string))
 
   default = {
     add  = null
@@ -227,26 +242,46 @@ variable "scaling_target_values" {
 variable "alb_settings" {
   description = "Application Load Balancer settings"
   type = object({
-    target_group   = string
-    container_name = string
-    container_port = number
+    security_groups     = list(string)
+    subnets             = list(string)
+    container_name      = string
+    health_check_path   = string
+    acm_tls_cert_domain = string
+    tls_cipher_policy   = string
   })
 
   default = {
-    target_group   = ""
-    container_name = ""
-    container_port = 8000
+    security_groups     = []
+    subnets             = []
+    container_name      = ""
+    health_check_path   = "/"
+    acm_tls_cert_domain = "app.example.net"
+    tls_cipher_policy   = ""
   }
 }
 
-variable "service_subnets" {
+variable "service_settings" {
   description = "List of subnets in which services can be launched"
-  type        = list(string)
-}
+  type = object({
+    subnets             = list(string)
+    security_groups     = list(string)
+    propagate_tags_from = string
+  })
 
-variable "service_security_groups" {
-  description = "List of security groups associated with the service"
-  type        = list(string)
+  default = {
+    subnets             = []
+    security_groups     = []
+    propagate_tags_from = "SERVICE"
+  }
+
+  validation {
+    condition = contains(
+      ["SERVICE", "TASK_DEFINITION"],
+      lookup(var.service_settings, "propagate_tags_from")
+    )
+    error_message = "Valid values for tag propagation are SERVICE or TASK_DEFINITION"
+  }
+
 }
 
 variable "propagate_tags_from" {
@@ -261,3 +296,7 @@ variable "propagate_tags_from" {
   }
 }
 
+variable "aws_vpc_id" {
+  description = "VPC ID"
+  type        = string
+}

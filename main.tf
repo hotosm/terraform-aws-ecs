@@ -46,24 +46,24 @@ resource "aws_ecs_service" "main" {
   launch_type = "FARGATE"
 
   load_balancer {
-    target_group_arn = lookup(var.alb_settings, "target_group")
+    target_group_arn = aws_lb_target_group.main.arn
     container_name   = lookup(var.alb_settings, "container_name")
-    container_port   = lookup(var.alb_settings, "container_port")
+    container_port   = lookup(var.container_settings, "app_port")
   }
 
   network_configuration {
-    subnets          = var.service_subnets
-    security_groups  = var.service_security_groups
+    subnets          = lookup(var.service_settings, "subnets")
+    security_groups  = lookup(var.service_settings, "security_groups")
     assign_public_ip = false
   }
 
-  propagate_tags = var.propagate_tags_from // "TASK_DEFINITION" or "SERVICE"
+  propagate_tags = var.propagate_tags_from
 
   /**
   service_connect_configuration {
     enabled = true
     log_configuration {
-      log_driver = "syslog" // json-file, journald, gelf, fluentd, awslogs, splunk, awsfirelens
+      log_driver = "syslog"
       options    = {}
       secret_option {
         name       = ""
@@ -74,18 +74,18 @@ resource "aws_ecs_service" "main" {
     service {
       client_alias {
         dns_name = ""
-        port     = 8000 // Must be number
+        port     = lookup(var.container_settings, "app_port)
       }
       discovery_name        = ""
-      ingress_port_override = 8000 // Must be number
+      ingress_port_override = lookup(var.container_settings, "app_port)
       port_name             = ""
     }
   }
 
   service_registries {
     registry_arn   = ""
-    port           = 8000 // Must be number
-    container_port = 8000 // Must be number
+    port           = lookup(var.container_settings, "app_port)
+    container_port = lookup(var.container_settings, "app_port)
     container_name = ""
   }
   **/

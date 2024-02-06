@@ -36,8 +36,8 @@ resource "aws_ecs_task_definition" "main" {
 
       portMappings = [
         {
-          containerPort = lookup(var.container_settings, "port")
-          hostPort      = lookup(var.container_settings, "port")
+          containerPort = lookup(var.container_settings, "app_port")
+          hostPort      = lookup(var.container_settings, "app_port")
         },
       ]
 
