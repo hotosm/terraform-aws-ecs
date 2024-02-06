@@ -185,9 +185,12 @@ variable "alb_container_name" {}
 variable "alb_container_port" {}
 variable "service_subnets" {}
 variable "service_security_groups" {}
+
 variable "propagate_tags_from" {
   description = "Propagate tags from SERVICE or TASK_DEFINITION"
   type        = string
+
+  default = "SERVICE"
 
   validation {
     condition     = contains(["SERVICE", "TASK_DEFINITION"], var.propagate_tags_from)
