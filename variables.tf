@@ -37,7 +37,13 @@ variable "container_envvars" {
 }
 
 variable "container_settings" {
-  type = map(string)
+  type = object({
+    service_name     = string
+    port             = number
+    image_url        = string
+    image_tag        = string
+    cpu_architecture = string
+  })
 
   default = {
     service_name     = ""
@@ -46,9 +52,18 @@ variable "container_settings" {
     image_tag        = ""
     cpu_architecture = "x86_64" // or ARM64
   }
+
+  validation {
+    condition = contains(
+      ["x86_64", "ARM64"],
+      lookup(var.container_settings, "cpu_architecture")
+    )
+    error_message = "Allowed CPU architectures are x86_64 and ARM64"
+  }
 }
 
 variable "container_capacity" {
+  type = map(number)
   default = {
     cpu       = 10
     memory_mb = 512
@@ -78,6 +93,15 @@ variable "tasks_desired_count" {
 }
 
 variable "log_configuration" {
+  description = "Log configuration"
+  type = object({
+    logdriver = string
+    options = object({
+      awslogs-group         = string
+      awslogs-region        = string
+      awslogs-stream-prefix = string
+    })
+  })
 
   default = {
     logdriver = "awslogs"
@@ -100,6 +124,7 @@ variable "linux_capabilities" {
   validation {
     condition = contains(
       [
+        null,
         "CAP_AUDIT_CONTROL",
         "CAP_AUDIT_READ",
         "CAP_AUDIT_WRITE",
@@ -162,6 +187,11 @@ variable "deployment_controller" {
 
 variable "alarm_settings" {
   description = "Alarm Settings"
+  type = object({
+    enable   = bool
+    names    = list(string)
+    rollback = bool
+  })
 
   default = {
     enable   = true
@@ -180,11 +210,30 @@ variable "scaling_target_values" {
   }
 }
 
-variable "alb_target_group" {}
-variable "alb_container_name" {}
-variable "alb_container_port" {}
-variable "service_subnets" {}
-variable "service_security_groups" {}
+variable "alb_settings" {
+  description = "Application Load Balancer settings"
+  type = object({
+    target_group   = string
+    container_name = string
+    container_port = number
+  })
+
+  default = {
+    target_group   = ""
+    container_name = ""
+    container_port = 8000
+  }
+}
+
+variable "service_subnets" {
+  description = "List of subnets in which services can be launched"
+  type        = list(string)
+}
+
+variable "service_security_groups" {
+  description = "List of security groups associated with the service"
+  type        = list(string)
+}
 
 variable "propagate_tags_from" {
   description = "Propagate tags from SERVICE or TASK_DEFINITION"

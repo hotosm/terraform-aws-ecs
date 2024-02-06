@@ -23,7 +23,7 @@ resource "aws_ecs_task_definition" "main" {
     {
       name = "main" // PARAMETERIZE
       image = join(":", [
-        lookup(var.container_settings, "image_uri"),
+        lookup(var.container_settings, "image_url"),
         lookup(var.container_settings, "image_tag")
       ])
 

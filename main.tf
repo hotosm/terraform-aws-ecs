@@ -46,9 +46,9 @@ resource "aws_ecs_service" "main" {
   launch_type = "FARGATE"
 
   load_balancer {
-    target_group_arn = var.alb_target_group
-    container_name   = var.alb_container_name
-    container_port   = var.alb_container_port
+    target_group_arn = lookup(var.alb_settings, "target_group")
+    container_name   = lookup(var.alb_settings, "container_name")
+    container_port   = lookup(var.alb_settings, "container_port")
   }
 
   network_configuration {
