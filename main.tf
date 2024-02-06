@@ -1,5 +1,5 @@
 resource "aws_ecs_cluster" "main" {
-  name = lookup(var.project_meta, "project")
+  name = lookup(var.project_meta, "name")
 
   setting {
     name  = "containerInsights"
@@ -7,13 +7,13 @@ resource "aws_ecs_cluster" "main" {
   }
 
   tags = {
-    Name = lookup(var.project_meta, "project")
+    Name = lookup(var.project_meta, "name")
   }
 }
 
 
 resource "aws_ecs_service" "main" {
-  name            = lookup(var.project_meta, "project")
+  name            = lookup(var.project_meta, "name")
   cluster         = aws_ecs_cluster.main.arn
   task_definition = aws_ecs_task_definition.main.arn
 
