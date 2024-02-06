@@ -57,7 +57,7 @@ resource "aws_ecs_service" "main" {
     assign_public_ip = false
   }
 
-  propagate_tags = var.propagate_tags_from
+  propagate_tags = lookup(var.service_settings, "propagate_tags_from")
 
   /**
   service_connect_configuration {
