@@ -131,10 +131,10 @@ variable "linux_capabilities" {
   type = map(list(string))
 
   default = {
-    add  = null
     drop = ["NET_RAW", "NET_BIND_SERVICE", "SYS_CHROOT"]
   }
 
+/**
   validation {
     condition = contains(
       [
@@ -185,6 +185,7 @@ variable "linux_capabilities" {
     )
     error_message = "Value is not a valid Linux Capabilities"
   }
+**/
 }
 
 variable "deployment_controller" {
