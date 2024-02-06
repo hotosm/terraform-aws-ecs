@@ -34,6 +34,7 @@ variable "container_secrets" {
     name      = string
     valueFrom = string
   }))
+  nullable = true
 }
 
 variable "container_envvars" {
@@ -42,6 +43,7 @@ variable "container_envvars" {
     name  = string
     value = string
   }))
+  nullable = true
 }
 
 variable "container_settings" {
@@ -52,14 +54,6 @@ variable "container_settings" {
     image_tag        = string
     cpu_architecture = string
   })
-
-  default = {
-    service_name     = ""
-    app_port         = 8000
-    image_url        = ""
-    image_tag        = ""
-    cpu_architecture = "X86_64" // or ARM64
-  }
 
   validation {
     condition = contains(
@@ -86,13 +80,13 @@ variable "container_security" {
 }
 
 variable "efs_settings" {
-  type = map(string)
+  description = "Settings related to EFS"
+  type = object({
+    file_system_id  = string
+    root_directory  = string
+    access_point_id = string
+  })
 
-  default = {
-    file_system_id  = ""
-    root_directory  = ""
-    access_point_id = ""
-  }
 }
 
 variable "tasks_count" {
@@ -116,15 +110,6 @@ variable "log_configuration" {
       awslogs-stream-prefix = string
     })
   })
-
-  default = {
-    logdriver = "awslogs"
-    options = {
-      awslogs-group         = ""
-      awslogs-region        = "us-east-1"
-      awslogs-stream-prefix = ""
-    }
-  }
 
   validation {
     condition = contains([
@@ -221,12 +206,6 @@ variable "alarm_settings" {
     names    = list(string)
     rollback = bool
   })
-
-  default = {
-    enable   = true
-    names    = []
-    rollback = false
-  }
 }
 
 variable "scaling_target_values" {
@@ -249,15 +228,6 @@ variable "alb_settings" {
     acm_tls_cert_domain = string
     tls_cipher_policy   = string
   })
-
-  default = {
-    security_groups     = []
-    subnets             = []
-    container_name      = ""
-    health_check_path   = "/"
-    acm_tls_cert_domain = "app.example.net"
-    tls_cipher_policy   = ""
-  }
 }
 
 variable "service_settings" {
@@ -268,12 +238,6 @@ variable "service_settings" {
     propagate_tags_from = string
   })
 
-  default = {
-    subnets             = []
-    security_groups     = []
-    propagate_tags_from = "SERVICE"
-  }
-
   validation {
     condition = contains(
       ["SERVICE", "TASK_DEFINITION"],
@@ -282,18 +246,6 @@ variable "service_settings" {
     error_message = "Valid values for tag propagation are SERVICE or TASK_DEFINITION"
   }
 
-}
-
-variable "propagate_tags_from" {
-  description = "Propagate tags from SERVICE or TASK_DEFINITION"
-  type        = string
-
-  default = "SERVICE"
-
-  validation {
-    condition     = contains(["SERVICE", "TASK_DEFINITION"], var.propagate_tags_from)
-    error_message = "Allowed values are SERVICE or TASK_DEFINITION"
-  }
 }
 
 variable "aws_vpc_id" {
