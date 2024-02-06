@@ -5,7 +5,7 @@ data "aws_acm_certificate" "wildcard" {
 }
 
 resource "aws_lb" "public" {
-  name               = lookup(var.project_meta, "project")
+  name               = lookup(var.project_meta, "name")
   internal           = false
   load_balancer_type = "application"
   security_groups    = lookup(var.alb_settings, "security_groups")
@@ -18,7 +18,7 @@ resource "aws_lb" "public" {
 }
 
 resource "aws_lb_target_group" "main" {
-  name            = lookup(var.project_meta, "project")
+  name            = lookup(var.project_meta, "name")
   port            = lookup(var.container_settings, "app_port")
   protocol        = "HTTP"
   vpc_id          = var.aws_vpc_id
