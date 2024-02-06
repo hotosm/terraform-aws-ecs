@@ -36,9 +36,9 @@ resource "aws_ecs_service" "main" {
     type = var.deployment_controller
   }
 
-  desired_count                      = var.tasks_desired_count
-  deployment_maximum_percent         = 200
-  deployment_minimum_healthy_percent = var.tasks_desired_count >= 2 ? 50 : 100
+  desired_count                      = lookup(var.tasks_count, "desired_count")
+  deployment_maximum_percent         = lookup(var.tasks_count, "max_pct")
+  deployment_minimum_healthy_percent = lookup(var.tasks_count, "min_healthy_pct")
 
   enable_ecs_managed_tags           = true
   health_check_grace_period_seconds = 400
@@ -52,8 +52,9 @@ resource "aws_ecs_service" "main" {
   }
 
   network_configuration {
-    subnets         = var.service_subnets
-    security_groups = var.service_security_groups
+    subnets          = var.service_subnets
+    security_groups  = var.service_security_groups
+    assign_public_ip = false
   }
 
   propagate_tags = var.propagate_tags_from // "TASK_DEFINITION" or "SERVICE"
@@ -102,5 +103,9 @@ resource "aws_ecs_service" "main" {
 
   triggers = {
     redeployment = plantimestamp()
+  }
+
+  lifecycle {
+    ignore_changes = [desired_count]
   }
 }

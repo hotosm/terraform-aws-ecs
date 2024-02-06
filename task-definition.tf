@@ -1,6 +1,7 @@
 resource "aws_ecs_task_definition" "main" {
   family                   = lookup(var.container_settings, "service_name")
   requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -41,7 +42,7 @@ resource "aws_ecs_task_definition" "main" {
       ]
 
       environment = var.container_envvars
-      secrets     = var.container_secret_refs
+      secrets     = var.container_secrets
 
       linuxParameters = {
         capabilities = var.linux_capabilities

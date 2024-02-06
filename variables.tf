@@ -28,12 +28,20 @@ variable "default_tags" {
   }
 }
 
-variable "container_secret_refs" {
-  type = list(string)
+variable "container_secrets" {
+  description = "Secrets from secrets manager passed on to the containers"
+  type = list(object({
+    name      = string
+    valueFrom = string
+  }))
 }
 
 variable "container_envvars" {
-  type = list(string)
+  description = "Environment variables passed on to the containers"
+  type = list(object({
+    name  = string
+    value = string
+  }))
 }
 
 variable "container_settings" {
@@ -87,9 +95,15 @@ variable "efs_settings" {
   }
 }
 
-variable "tasks_desired_count" {
+variable "tasks_count" {
   type        = number
   description = "Desired count of replications for service"
+
+  default = {
+    desired_count   = 2
+    min_healthy_pct = 50
+    max_pct         = 200
+  }
 }
 
 variable "log_configuration" {
