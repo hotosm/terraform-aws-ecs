@@ -102,11 +102,6 @@ variable "efs_settings" {
     error_message = "IAM authorization needs to be ENABLED or DISABLED"
   }
 
-  validation {
-    condition = lookup(var.efs_settings, "iam_authz") == lookup(var.efs_settings, "transit_encryption")
-
-    error_message = "IAM Authorization needs transit encryption to be ENABLED"
-  }
 }
 
 variable "tasks_count" {

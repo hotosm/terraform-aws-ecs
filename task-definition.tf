@@ -56,5 +56,7 @@ resource "aws_ecs_task_definition" "main" {
       logConfiguration = var.log_configuration
     }
   ])
+
+  execution_role_arn = data.aws_iam_role.default-exec.arn
 }
 
