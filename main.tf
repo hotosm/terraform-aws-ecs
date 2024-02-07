@@ -114,15 +114,6 @@ resource "aws_ecs_service" "main" {
 
   force_new_deployment = true
 
-  ordered_placement_strategy {
-    type  = "binpack"
-    field = "cpu"
-  }
-  ordered_placement_strategy {
-    type  = "binpack"
-    field = "memory"
-  }
-
   triggers = {
     redeployment = plantimestamp()
   }
