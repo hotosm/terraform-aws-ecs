@@ -10,13 +10,18 @@ resource "aws_ecs_task_definition" "main" {
 
   volume {
     name = "efs-volume"
+
     efs_volume_configuration {
-      file_system_id = lookup(var.efs_settings, "file_system_id")
-      root_directory = lookup(var.efs_settings, "root_directory")
+      file_system_id          = lookup(var.efs_settings, "file_system_id")
+      root_directory          = lookup(var.efs_settings, "root_directory")
+      transit_encryption      = lookup(var.efs_settings, "transit_encryption")
+      transit_encryption_port = lookup(var.efs_settings, "transit_encryption_port")
+
       authorization_config {
         access_point_id = lookup(var.efs_settings, "access_point_id")
-        iam             = "ENABLED" // PARAMETERIZE
+        iam             = lookup(var.efs_settings, "iam_authz")
       }
+
     }
   }
 

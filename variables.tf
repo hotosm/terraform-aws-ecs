@@ -80,13 +80,33 @@ variable "container_security" {
 }
 
 variable "efs_settings" {
-  description = "Settings related to EFS"
+  description = "EFS access and encryption settings"
   type = object({
-    file_system_id  = string
-    root_directory  = string
-    access_point_id = string
+    file_system_id          = string
+    root_directory          = string
+    access_point_id         = string
+    transit_encryption      = string
+    transit_encryption_port = number
+    iam_authz               = string
   })
 
+  validation {
+    condition = contains(["ENABLED", "DISABLED"], lookup(var.efs_settings, "transit_encryption"))
+
+    error_message = "Transit encryption needs to be ENABLED or DISABLED"
+  }
+
+  validation {
+    condition = contains(["ENABLED", "DISABLED"], lookup(var.efs_settings, "iam_authz"))
+
+    error_message = "Transit encryption needs to be ENABLED or DISABLED"
+  }
+
+  validation {
+    condition = lookup(var.efs_settings, "iam_authz") == lookup(var.efs_settings, "transit_encryption")
+
+    error_message = "IAM Authorization needs transit encryption to be ENABLED"
+  }
 }
 
 variable "tasks_count" {
