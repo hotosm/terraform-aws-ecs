@@ -67,7 +67,7 @@ variable "container_settings" {
 variable "container_capacity" {
   type = map(number)
   default = {
-    cpu       = 10
+    cpu       = 256
     memory_mb = 512
   }
 }
