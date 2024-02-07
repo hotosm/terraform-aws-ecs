@@ -29,7 +29,7 @@ resource "aws_ecs_task_definition" "main" {
 
   container_definitions = jsonencode([
     {
-      name = "main" // PARAMETERIZE
+      name = lookup(var.container_settings, "service_name")
       image = join(":", [
         lookup(var.container_settings, "image_url"),
         lookup(var.container_settings, "image_tag")
