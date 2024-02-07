@@ -99,7 +99,7 @@ variable "efs_settings" {
   validation {
     condition = contains(["ENABLED", "DISABLED"], lookup(var.efs_settings, "iam_authz"))
 
-    error_message = "Transit encryption needs to be ENABLED or DISABLED"
+    error_message = "IAM authorization needs to be ENABLED or DISABLED"
   }
 
   validation {
