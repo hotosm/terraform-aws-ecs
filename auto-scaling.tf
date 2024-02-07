@@ -26,7 +26,10 @@ resource "aws_appautoscaling_policy" "by-req" {
 
     predefined_metric_specification {
       predefined_metric_type = "ALBRequestCountPerTarget"
-      resource_label         = "long string" // PARAMETERIZE
+      resource_label = join("/", [
+        aws_lb.public.arn_suffix,
+        aws_lb_target_group.main.arn_suffix
+      ])
     }
   }
 }
