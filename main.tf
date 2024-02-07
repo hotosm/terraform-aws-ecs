@@ -1,3 +1,26 @@
+resource "aws_security_group" "svc" {
+  name        = "svc_private_access"
+  description = "Private access to service from load balancer"
+  vpc_id      = var.aws_vpc_id
+
+  ingress {
+    description     = "Allow connections from load balancer"
+    from_port       = lookup(var.container_settings, "app_port")
+    to_port         = lookup(var.container_settings, "app_port")
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
+  }
+
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "all"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+}
+
 resource "aws_ecs_cluster" "main" {
   name = lookup(var.project_meta, "name")
 
@@ -10,7 +33,6 @@ resource "aws_ecs_cluster" "main" {
     Name = lookup(var.project_meta, "name")
   }
 }
-
 
 resource "aws_ecs_service" "main" {
   name            = lookup(var.project_meta, "name")
@@ -53,7 +75,7 @@ resource "aws_ecs_service" "main" {
 
   network_configuration {
     subnets          = lookup(var.service_settings, "subnets")
-    security_groups  = lookup(var.service_settings, "security_groups")
+    security_groups  = [aws_security_group.svc.id]
     assign_public_ip = false
   }
 

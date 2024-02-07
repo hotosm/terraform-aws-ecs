@@ -222,7 +222,6 @@ variable "scaling_target_values" {
 variable "alb_settings" {
   description = "Application Load Balancer settings"
   type = object({
-    security_groups     = list(string)
     subnets             = list(string)
     container_name      = string
     health_check_path   = string
@@ -235,7 +234,6 @@ variable "service_settings" {
   description = "List of subnets in which services can be launched"
   type = object({
     subnets             = list(string)
-    security_groups     = list(string)
     propagate_tags_from = string
   })
 

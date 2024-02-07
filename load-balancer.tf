@@ -4,11 +4,44 @@ data "aws_acm_certificate" "wildcard" {
   most_recent = true
 }
 
+resource "aws_security_group" "alb" {
+  name        = "alb_public_access"
+  description = "Public access for load balancer"
+  vpc_id      = var.aws_vpc_id
+
+  ingress {
+    description      = "Allow HTTPS connections from everywhere"
+    from_port        = 443
+    to_port          = 443
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  ingress {
+    description      = "Allow HTTP connections to allow redirection to HTTPS"
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "all"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+}
+
 resource "aws_lb" "public" {
   name               = lookup(var.project_meta, "name")
   internal           = false
   load_balancer_type = "application"
-  security_groups    = lookup(var.alb_settings, "security_groups")
+  security_groups    = [aws_security_group.alb.id]
   subnets            = lookup(var.alb_settings, "subnets")
 
   enable_deletion_protection = false
