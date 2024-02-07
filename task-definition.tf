@@ -2,6 +2,8 @@ resource "aws_ecs_task_definition" "main" {
   family                   = lookup(var.container_settings, "service_name")
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
+  cpu                      = lookup(var.container_capacity, "cpu")
+  memory                   = lookup(var.container_capacity, "memory_mb")
 
   runtime_platform {
     operating_system_family = "LINUX"
