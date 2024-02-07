@@ -69,7 +69,7 @@ resource "aws_ecs_service" "main" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.main.arn
-    container_name   = lookup(var.alb_settings, "container_name")
+    container_name   = lookup(var.container_settings, "service_name")
     container_port   = lookup(var.container_settings, "app_port")
   }
 

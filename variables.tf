@@ -238,7 +238,6 @@ variable "alb_settings" {
   description = "Application Load Balancer settings"
   type = object({
     subnets             = list(string)
-    container_name      = string
     health_check_path   = string
     acm_tls_cert_domain = string
     tls_cipher_policy   = string
