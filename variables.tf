@@ -34,6 +34,7 @@ variable "container_secrets" {
     name      = string
     valueFrom = string
   }))
+
   nullable = true
 }
 
@@ -43,6 +44,7 @@ variable "container_envvars" {
     name  = string
     value = string
   }))
+
   nullable = true
 }
 
