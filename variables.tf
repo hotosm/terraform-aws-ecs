@@ -279,3 +279,10 @@ variable "aws_vpc_id" {
   description = "VPC ID"
   type        = string
 }
+
+variable "service_security_groups" {
+  description = "Security groups to attach to service"
+  type        = list(string)
+
+  default = []
+}

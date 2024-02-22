@@ -75,7 +75,7 @@ resource "aws_ecs_service" "main" {
 
   network_configuration {
     subnets          = lookup(var.service_settings, "subnets")
-    security_groups  = [aws_security_group.svc.id]
+    security_groups  = concat(var.service_security_groups, [aws_security_group.svc.id])
     assign_public_ip = false
   }
 
