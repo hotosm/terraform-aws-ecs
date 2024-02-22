@@ -1,6 +1,6 @@
 resource "aws_appautoscaling_target" "main" {
-  max_capacity = 200
-  min_capacity = 100
+  max_capacity = lookup(var.scaling_target_values, "container_max_count")
+  min_capacity = lookup(var.scaling_target_values, "container_min_count")
 
   resource_id = join("/", [
     "service",

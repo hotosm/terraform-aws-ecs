@@ -227,13 +227,25 @@ variable "alarm_settings" {
 }
 
 variable "scaling_target_values" {
-  type = map(number)
+  type = object({
+    cpu_pct             = number
+    memory_pct          = number
+    request_count       = number
+    container_min_count = number
+    container_max_count = number
+  })
 
   default = {
-    cpu_pct       = 85
-    memory_pct    = 85
-    request_count = 50
+    cpu_pct             = 85
+    memory_pct          = 85
+    request_count       = 50
+    container_min_count = 2
+    container_max_count = 20
   }
+
+  // TODO: validation - mem_pct max 99; mem_pct min 5;
+  // TODO: validation - cpu_pct max 99; cpu_pct min 5;
+  // TODO: validation - container_min_count min 1; max_count min 5;
 }
 
 variable "alb_settings" {
