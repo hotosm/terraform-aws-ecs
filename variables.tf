@@ -88,7 +88,6 @@ variable "efs_settings" {
     root_directory          = string
     access_point_id         = string
     transit_encryption      = string
-    transit_encryption_port = number
     iam_authz               = string
   })
 

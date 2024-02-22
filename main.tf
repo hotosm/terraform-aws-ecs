@@ -11,7 +11,6 @@ resource "aws_security_group" "svc" {
     security_groups = [aws_security_group.alb.id]
   }
 
-
   egress {
     from_port        = 0
     to_port          = 0
@@ -80,37 +79,6 @@ resource "aws_ecs_service" "main" {
   }
 
   propagate_tags = lookup(var.service_settings, "propagate_tags_from")
-
-  /**
-  service_connect_configuration {
-    enabled = true
-    log_configuration {
-      log_driver = "syslog"
-      options    = {}
-      secret_option {
-        name       = ""
-        value_from = ""
-      }
-    }
-    namespace = ""
-    service {
-      client_alias {
-        dns_name = ""
-        port     = lookup(var.container_settings, "app_port)
-      }
-      discovery_name        = ""
-      ingress_port_override = lookup(var.container_settings, "app_port)
-      port_name             = ""
-    }
-  }
-
-  service_registries {
-    registry_arn   = ""
-    port           = lookup(var.container_settings, "app_port)
-    container_port = lookup(var.container_settings, "app_port)
-    container_name = ""
-  }
-  **/
 
   force_new_deployment = true
 
