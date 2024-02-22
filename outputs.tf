@@ -23,6 +23,11 @@ output "load_balancer" {
   value       = aws_lb.public.arn
 }
 
+output "load_balancer_dns" {
+  description = "ARN of the application load balancer"
+  value       = aws_lb.public.dns_name
+}
+
 output "load_balancer_security_group" {
   description = "ID of the load balancer security group"
   value       = aws_security_group.alb.id

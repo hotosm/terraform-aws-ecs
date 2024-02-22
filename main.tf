@@ -119,6 +119,8 @@ resource "aws_ecs_service" "main" {
   }
 
   lifecycle {
-    ignore_changes = [desired_count]
+    ignore_changes = [
+      desired_count
+    ]
   }
 }
