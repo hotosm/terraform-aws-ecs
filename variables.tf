@@ -285,3 +285,8 @@ variable "service_security_groups" {
 
   default = []
 }
+
+variable "ecs_cluster_name" {
+  description = "Name of the ECS cluster in which to launch the services"
+  type        = string
+}
