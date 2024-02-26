@@ -84,11 +84,11 @@ variable "container_security" {
 variable "efs_settings" {
   description = "EFS access and encryption settings"
   type = object({
-    file_system_id          = string
-    root_directory          = string
-    access_point_id         = string
-    transit_encryption      = string
-    iam_authz               = string
+    file_system_id     = string
+    root_directory     = string
+    access_point_id    = string
+    transit_encryption = string
+    iam_authz          = string
   })
 
   validation {

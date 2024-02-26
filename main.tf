@@ -20,22 +20,9 @@ resource "aws_security_group" "svc" {
   }
 }
 
-resource "aws_ecs_cluster" "main" {
-  name = lookup(var.project_meta, "name")
-
-  setting {
-    name  = "containerInsights"
-    value = "enabled"
-  }
-
-  tags = {
-    Name = lookup(var.project_meta, "name")
-  }
-}
-
 resource "aws_ecs_service" "main" {
   name            = lookup(var.project_meta, "name")
-  cluster         = aws_ecs_cluster.main.arn
+  cluster         = var.ecs_cluster_arn
   task_definition = aws_ecs_task_definition.main.arn
 
   dynamic "alarms" {
