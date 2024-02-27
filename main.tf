@@ -22,7 +22,7 @@ resource "aws_security_group" "svc" {
     from_port       = lookup(var.container_settings, "app_port")
     to_port         = lookup(var.container_settings, "app_port")
     protocol        = "tcp"
-    security_groups = aws_security_group.egress-only.id
+    security_groups = concat([var.alb_security_group], [aws_security_group.egress-only])
     self            = true
   }
 
@@ -80,7 +80,7 @@ resource "aws_ecs_service" "main" {
 
   network_configuration {
     subnets          = lookup(var.service_settings, "subnets")
-    security_groups  = concat(var.service_security_groups, [aws_security_group.svc.id])
+    security_groups  = concat(var.service_security_groups)
     assign_public_ip = false
   }
 

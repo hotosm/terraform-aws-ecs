@@ -276,6 +276,11 @@ variable "service_security_groups" {
   default = []
 }
 
+variable "alb_security_group" {
+  description = "ALB security group if exists; nullable"
+  type        = string
+}
+
 variable "ecs_cluster_name" {
   description = "Name of the ECS cluster in which to launch the services"
   type        = string
