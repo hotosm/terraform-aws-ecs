@@ -13,7 +13,7 @@ resource "aws_security_group" "alb" {
     local.load_balancer_enabled
   ]
 
-  name        = "alb_public_access"
+  name_prefix = "alb_public_access"
   description = "Public access for load balancer"
   vpc_id      = var.aws_vpc_id
 

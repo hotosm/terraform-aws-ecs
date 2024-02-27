@@ -45,7 +45,7 @@ data "aws_iam_policy_document" "secrets-manager" {
 }
 
 resource "aws_iam_policy" "secrets-manager" {
-  name        = "secrets-manager"
+  name_prefix = "secrets-manager"
   description = "IAM Policy that allows access to Secrets Manager entries"
   policy      = data.aws_iam_policy_document.secrets-manager.json
 }

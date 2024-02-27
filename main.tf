@@ -1,5 +1,5 @@
 resource "aws_security_group" "egress-only" {
-  name        = "egress-only"
+  name_prefix = "egress-only"
   description = "Egress only security group"
   vpc_id      = var.aws_vpc_id
 
@@ -14,7 +14,7 @@ resource "aws_security_group" "egress-only" {
 
 
 resource "aws_security_group" "svc" {
-  name        = "svc_private_access"
+  name_prefix = "svc_private_access"
   description = "Private access to service from load balancer"
   vpc_id      = var.aws_vpc_id
 
