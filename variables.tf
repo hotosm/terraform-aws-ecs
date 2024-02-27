@@ -307,3 +307,8 @@ variable "target_group_arn_suffix" {
   description = "Target Group ARN suffix"
   type        = string
 }
+
+variable "target_group_arn" {
+  description = "Target Group ARN"
+  type        = string
+}
