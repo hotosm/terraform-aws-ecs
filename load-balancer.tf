@@ -45,7 +45,7 @@ resource "aws_security_group" "alb" {
 }
 
 resource "aws_lb" "public" {
-  name               = lookup(var.project_meta, "name")
+  name_prefix        = lookup(var.project_meta, "name")
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]

@@ -64,7 +64,7 @@ resource "aws_ecs_service" "main" {
   deployment_minimum_healthy_percent = lookup(var.tasks_count, "min_healthy_pct")
 
   enable_ecs_managed_tags           = true
-  health_check_grace_period_seconds = 400
+  health_check_grace_period_seconds = var.load_balancer_enabled ? 400 : null
 
   launch_type = "FARGATE"
 
