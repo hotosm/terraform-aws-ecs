@@ -12,7 +12,6 @@ resource "aws_security_group" "egress-only" {
   }
 }
 
-
 resource "aws_security_group" "svc" {
   name_prefix = "svc_private_access"
   description = "Private access to service from load balancer"
@@ -23,7 +22,8 @@ resource "aws_security_group" "svc" {
     from_port       = lookup(var.container_settings, "app_port")
     to_port         = lookup(var.container_settings, "app_port")
     protocol        = "tcp"
-    security_groups = var.load_balancer_enabled ? [aws_security_group.alb.id] : [aws_security_group.egress-only.id]
+    security_groups = aws_security_group.egress-only.id
+    self            = true
   }
 
   egress {
@@ -72,7 +72,7 @@ resource "aws_ecs_service" "main" {
     for_each = var.load_balancer_enabled ? ["a"] : []
 
     content {
-      target_group_arn = aws_lb_target_group.main.arn
+      target_group_arn = var.target_group_arn
       container_name   = lookup(var.container_settings, "service_name")
       container_port   = lookup(var.container_settings, "app_port")
     }

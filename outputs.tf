@@ -18,26 +18,6 @@ output "service_name" {
   description = "Name of the service"
 }
 
-output "load_balancer" {
-  description = "ARN of the application load balancer"
-  value       = aws_lb.public.arn
-}
-
-output "load_balancer_dns" {
-  description = "ARN of the application load balancer"
-  value       = aws_lb.public.dns_name
-}
-
-output "load_balancer_security_group" {
-  description = "ID of the load balancer security group"
-  value       = aws_security_group.alb.id
-}
-
-output "target_group" {
-  description = "ARN of the load balancer target group"
-  value       = aws_lb_target_group.main.arn
-}
-
 output "service_security_group" {
   description = "ID of the service security group"
   value       = aws_security_group.svc.id

@@ -247,16 +247,6 @@ variable "scaling_target_values" {
   // TODO: validation - container_min_count min 1; max_count min 5;
 }
 
-variable "alb_settings" {
-  description = "Application Load Balancer settings"
-  type = object({
-    subnets             = list(string)
-    health_check_path   = string
-    acm_tls_cert_domain = string
-    tls_cipher_policy   = string
-  })
-}
-
 variable "service_settings" {
   description = "List of subnets in which services can be launched"
   type = object({
@@ -301,4 +291,14 @@ variable "load_balancer_enabled" {
   type        = bool
 
   default = true
+}
+
+variable "load_balancer_arn_suffix" {
+  description = "Load Balancer ARN Suffix"
+  type        = string
+}
+
+variable "target_group_arn_suffix" {
+  description = "Target Group ARN suffix"
+  type        = string
 }
