@@ -1,7 +1,3 @@
-data "aws_ecs_cluster" "main" {
-  cluster_name = var.ecs_cluster_name
-}
-
 resource "aws_security_group" "svc" {
   name        = "svc_private_access"
   description = "Private access to service from load balancer"
@@ -26,7 +22,7 @@ resource "aws_security_group" "svc" {
 
 resource "aws_ecs_service" "main" {
   name            = lookup(var.project_meta, "name")
-  cluster         = data.aws_ecs_cluster.main.arn
+  cluster         = var.ecs_cluster_arn
   task_definition = aws_ecs_task_definition.main.arn
 
   dynamic "alarms" {
