@@ -1,3 +1,18 @@
+resource "aws_security_group" "egress-only" {
+  name        = "egress-only"
+  description = "Egress only security group"
+  vpc_id      = var.aws_vpc_id
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "all"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+}
+
+
 resource "aws_security_group" "svc" {
   name        = "svc_private_access"
   description = "Private access to service from load balancer"
@@ -8,7 +23,7 @@ resource "aws_security_group" "svc" {
     from_port       = lookup(var.container_settings, "app_port")
     to_port         = lookup(var.container_settings, "app_port")
     protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
+    security_groups = var.load_balancer_enabled ? [aws_security_group.alb.id] : [aws_security_group.egress-only.id]
   }
 
   egress {
@@ -53,10 +68,14 @@ resource "aws_ecs_service" "main" {
 
   launch_type = "FARGATE"
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.main.arn
-    container_name   = lookup(var.container_settings, "service_name")
-    container_port   = lookup(var.container_settings, "app_port")
+  dynamic "load_balancer" {
+    for_each = var.load_balancer_enabled ? ["a"] : []
+
+    content {
+      target_group_arn = aws_lb_target_group.main.arn
+      container_name   = lookup(var.container_settings, "service_name")
+      container_port   = lookup(var.container_settings, "app_port")
+    }
   }
 
   network_configuration {

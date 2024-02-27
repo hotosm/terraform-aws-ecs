@@ -4,7 +4,15 @@ data "aws_acm_certificate" "wildcard" {
   most_recent = true
 }
 
+locals {
+  load_balancer_enabled = var.load_balancer_enabled ? true : null
+}
+
 resource "aws_security_group" "alb" {
+  depends_on = [
+    local.load_balancer_enabled
+  ]
+
   name        = "alb_public_access"
   description = "Public access for load balancer"
   vpc_id      = var.aws_vpc_id
@@ -34,7 +42,6 @@ resource "aws_security_group" "alb" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
-
 }
 
 resource "aws_lb" "public" {
@@ -51,6 +58,10 @@ resource "aws_lb" "public" {
 }
 
 resource "aws_lb_target_group" "main" {
+  depends_on = [
+    aws_lb.public
+  ]
+
   name            = lookup(var.project_meta, "name")
   port            = lookup(var.container_settings, "app_port")
   protocol        = "HTTP"

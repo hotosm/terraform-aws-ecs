@@ -295,3 +295,10 @@ variable "ecs_cluster_arn" {
   description = "ARN of the ECS cluster in which to launch the services"
   type        = string
 }
+
+variable "load_balancer_enabled" {
+  description = "Enable if you need a load balancer for the service"
+  type        = bool
+
+  default = true
+}
