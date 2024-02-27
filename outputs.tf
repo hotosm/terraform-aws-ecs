@@ -18,11 +18,6 @@ output "service_name" {
   description = "Name of the service"
 }
 
-output "service_security_group" {
-  description = "ID of the service security group"
-  value       = aws_security_group.svc.id
-}
-
 output "task_definition" {
   description = "ARN of the task definition"
   value       = aws_ecs_task_definition.main.arn
