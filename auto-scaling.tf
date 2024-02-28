@@ -13,6 +13,8 @@ resource "aws_appautoscaling_target" "main" {
 }
 
 resource "aws_appautoscaling_policy" "by-req" {
+  count = var.load_balancer_enabled ? 1 : 0
+
   name        = "scale-by-request-count"
   policy_type = "TargetTrackingScaling"
 
