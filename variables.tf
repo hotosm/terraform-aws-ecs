@@ -1,17 +1,5 @@
-variable "project_meta" {
-  description = "Metadata relating to the project for which the VPC is being created"
-  type        = map(string)
-
-  default = {
-    name       = ""
-    short_name = ""
-    version    = ""
-    url        = ""
-  }
-}
-
-variable "deployment_environment" {
-  description = "Deployment flavour or variant identified by this name"
+variable "service_name" {
+  description = "Name to assign to the ECS service"
   type        = string
 }
 

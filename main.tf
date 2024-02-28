@@ -1,5 +1,5 @@
 resource "aws_ecs_service" "main" {
-  name            = lookup(var.project_meta, "name")
+  name            = var.service_name
   cluster         = var.ecs_cluster_arn
   task_definition = aws_ecs_task_definition.main.arn
 
