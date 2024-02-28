@@ -24,6 +24,7 @@ variable "container_secrets" {
   }))
 
   nullable = true
+  default  = null
 }
 
 variable "container_envvars" {
@@ -34,6 +35,7 @@ variable "container_envvars" {
   }))
 
   nullable = true
+  default  = null
 }
 
 variable "container_settings" {
@@ -262,6 +264,8 @@ variable "service_settings" {
 variable "aws_vpc_id" {
   description = "VPC ID"
   type        = string
+
+  nullable = false
 }
 
 variable "service_security_groups" {
@@ -279,6 +283,8 @@ variable "alb_security_group" {
 variable "ecs_cluster_name" {
   description = "Name of the ECS cluster in which to launch the services"
   type        = string
+
+  nullable = false
 }
 
 variable "ecs_cluster_arn" {
