@@ -28,10 +28,12 @@ resource "aws_ecs_task_definition" "main" {
   container_definitions = jsonencode([
     {
       name = lookup(var.container_settings, "service_name")
+
       image = join(":", [
         lookup(var.container_settings, "image_url"),
         lookup(var.container_settings, "image_tag")
       ])
+      command = var.container_commands
 
       privileged = lookup(var.container_security, "privileged")
 

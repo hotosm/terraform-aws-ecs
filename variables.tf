@@ -54,6 +54,13 @@ variable "container_settings" {
   }
 }
 
+variable "container_commands" {
+  description = "Custom container command to run"
+  type        = list(string)
+
+  default = null
+}
+
 variable "container_capacity" {
   type = map(number)
   default = {
