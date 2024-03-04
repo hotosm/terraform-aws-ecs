@@ -60,5 +60,6 @@ resource "aws_ecs_task_definition" "main" {
   ])
 
   execution_role_arn = aws_iam_role.ecs-agent.arn
+  task_role_arn      = var.task_role_arn
 }
 
