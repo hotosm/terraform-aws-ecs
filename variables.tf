@@ -295,6 +295,8 @@ variable "ecs_cluster_arn" {
 variable "task_role_arn" {
   description = "ARN of task (guest-app) role"
   type        = string
+
+default  = null
 }
 
 variable "load_balancer_enabled" {
