@@ -51,6 +51,14 @@ resource "aws_ecs_task_definition" "main" {
       environment = var.container_envvars
       secrets     = var.container_secrets
 
+      mountPoints = [
+        {
+          containerPath = var.container_efs_volume_mount_path
+          readOnly      = "false"
+          sourceVolume  = "efs-volume"
+        }
+      ]
+
       linuxParameters = {
         capabilities = var.linux_capabilities
       }

@@ -296,7 +296,7 @@ variable "task_role_arn" {
   description = "ARN of task (guest-app) role"
   type        = string
 
-default  = null
+  default = null
 }
 
 variable "load_balancer_enabled" {
@@ -318,5 +318,10 @@ variable "target_group_arn_suffix" {
 
 variable "target_group_arn" {
   description = "Target Group ARN"
+  type        = string
+}
+
+variable "container_efs_volume_mount_path" {
+  description = "Absolute path on which to mount the EFS volume"
   type        = string
 }
