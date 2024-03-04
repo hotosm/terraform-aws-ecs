@@ -54,7 +54,7 @@ resource "aws_ecs_task_definition" "main" {
       mountPoints = [
         {
           containerPath = var.container_efs_volume_mount_path
-          readOnly      = "false"
+          readOnly      = false
           sourceVolume  = "efs-volume"
         }
       ]
