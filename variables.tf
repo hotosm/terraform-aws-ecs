@@ -325,3 +325,10 @@ variable "container_efs_volume_mount_path" {
   description = "Absolute path on which to mount the EFS volume"
   type        = string
 }
+
+variable "force_new_deployment" {
+  description = "Force new deployment everytime?"
+  type         = bool
+
+  default = false
+}

@@ -49,7 +49,7 @@ resource "aws_ecs_service" "main" {
 
   propagate_tags = lookup(var.service_settings, "propagate_tags_from")
 
-  force_new_deployment = true
+  force_new_deployment = var.force_new_deployment
 
   triggers = {
     redeployment = plantimestamp()
