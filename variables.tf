@@ -56,6 +56,13 @@ variable "container_settings" {
   }
 }
 
+variable "app_port_protocol" {
+  description = "Protocol for the application port"
+  type        = string
+
+  default = "tcp"
+}
+
 variable "container_commands" {
   description = "Custom container command to run"
   type        = list(string)
@@ -144,6 +151,7 @@ variable "linux_capabilities" {
   type = map(list(string))
 
   default = {
+    add  = []
     drop = ["NET_RAW", "NET_BIND_SERVICE", "SYS_CHROOT"]
   }
 
@@ -328,7 +336,7 @@ variable "container_efs_volume_mount_path" {
 
 variable "force_new_deployment" {
   description = "Force new deployment everytime?"
-  type         = bool
+  type        = bool
 
   default = false
 }

@@ -45,6 +45,7 @@ resource "aws_ecs_task_definition" "main" {
         {
           containerPort = lookup(var.container_settings, "app_port")
           hostPort      = lookup(var.container_settings, "app_port")
+          protocol      = var.app_port_protocol
         },
       ]
 
