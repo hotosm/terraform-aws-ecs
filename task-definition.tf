@@ -10,17 +10,21 @@ resource "aws_ecs_task_definition" "main" {
     cpu_architecture        = var.container_cpu_architecture
   }
 
-  volume {
-    name = "efs-volume"
+  dynamic "volume" {
+    for_each = var.efs_enabled ? ["a"] : []
 
-    efs_volume_configuration {
-      file_system_id     = lookup(var.efs_settings, "file_system_id")
-      root_directory     = lookup(var.efs_settings, "root_directory")
-      transit_encryption = lookup(var.efs_settings, "transit_encryption")
+    content {
+      name = "efs-volume"
 
-      authorization_config {
-        access_point_id = lookup(var.efs_settings, "access_point_id")
-        iam             = lookup(var.efs_settings, "iam_authz")
+      efs_volume_configuration {
+        file_system_id     = lookup(var.efs_settings, "file_system_id")
+        root_directory     = lookup(var.efs_settings, "root_directory")
+        transit_encryption = lookup(var.efs_settings, "transit_encryption")
+
+        authorization_config {
+          access_point_id = lookup(var.efs_settings, "access_point_id")
+          iam             = lookup(var.efs_settings, "iam_authz")
+        }
       }
     }
   }
@@ -52,13 +56,13 @@ resource "aws_ecs_task_definition" "main" {
       environment = var.container_envvars
       secrets     = var.container_secrets
 
-      mountPoints = [
+      mountPoints = var.efs_enabled ? [
         {
           containerPath = var.container_efs_volume_mount_path
           readOnly      = false
           sourceVolume  = "efs-volume"
         }
-      ]
+      ] : null
 
       linuxParameters = {
         capabilities = var.linux_capabilities

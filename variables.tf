@@ -88,6 +88,13 @@ variable "container_security" {
   }
 }
 
+variable "efs_enabled" {
+  description = "Whether to mount an EFS filesystem to the service"
+  type        = bool
+
+  default = false
+}
+
 variable "efs_settings" {
   description = "EFS access and encryption settings"
   type = object({
@@ -110,6 +117,13 @@ variable "efs_settings" {
     error_message = "IAM authorization needs to be ENABLED or DISABLED"
   }
 
+}
+
+variable "container_efs_volume_mount_path" {
+  description = "Absolute path on which to mount the EFS volume"
+  type        = string
+
+  default = "/"
 }
 
 variable "tasks_count" {
@@ -338,13 +352,6 @@ variable "target_group_arn_suffix" {
 variable "target_group_arn" {
   description = "Target Group ARN"
   type        = string
-}
-
-variable "container_efs_volume_mount_path" {
-  description = "Absolute path on which to mount the EFS volume"
-  type        = string
-
-  default = "/"
 }
 
 variable "force_new_deployment" {
