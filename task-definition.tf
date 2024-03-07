@@ -7,7 +7,7 @@ resource "aws_ecs_task_definition" "main" {
 
   runtime_platform {
     operating_system_family = "LINUX"
-    cpu_architecture        = lookup(var.container_settings, "cpu_architecture")
+    cpu_architecture        = var.container_cpu_architecture
   }
 
   volume {

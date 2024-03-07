@@ -40,18 +40,21 @@ variable "container_envvars" {
 
 variable "container_settings" {
   type = object({
-    service_name     = string
-    app_port         = number
-    image_url        = string
-    image_tag        = string
-    cpu_architecture = string
+    service_name = string
+    app_port     = number
+    image_url    = string
+    image_tag    = string
   })
+}
+
+variable "container_cpu_architecture" {
+  description = "CPU architecture of the container host"
+  type        = string
+
+  default = "X86_64"
 
   validation {
-    condition = contains(
-      ["X86_64", "ARM64"],
-      lookup(var.container_settings, "cpu_architecture")
-    )
+    condition     = contains(["X86_64", "ARM64"], var.container_cpu_architecture)
     error_message = "Allowed CPU architectures are x86_64 and ARM64"
   }
 }
@@ -332,6 +335,8 @@ variable "target_group_arn" {
 variable "container_efs_volume_mount_path" {
   description = "Absolute path on which to mount the EFS volume"
   type        = string
+
+  default = "/"
 }
 
 variable "force_new_deployment" {
