@@ -42,12 +42,12 @@ resource "aws_ecs_service" "main" {
   }
 
   network_configuration {
-    subnets          = lookup(var.service_settings, "subnets")
+    subnets          = var.service_subnets
     security_groups  = concat(var.service_security_groups)
     assign_public_ip = false
   }
 
-  propagate_tags = lookup(var.service_settings, "propagate_tags_from")
+  propagate_tags = var.propagate_tags_from
 
   force_new_deployment = var.force_new_deployment
 

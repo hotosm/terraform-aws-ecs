@@ -261,21 +261,23 @@ variable "scaling_target_values" {
   // TODO: validation - container_min_count min 1; max_count min 5;
 }
 
-variable "service_settings" {
-  description = "List of subnets in which services can be launched"
-  type = object({
-    subnets             = list(string)
-    propagate_tags_from = string
-  })
+variable "propagate_tags_from" {
+  description = "Whether to propagate tags from service or task definition"
+  type        = string
+
+  default = "SERVICE"
 
   validation {
-    condition = contains(
-      ["SERVICE", "TASK_DEFINITION"],
-      lookup(var.service_settings, "propagate_tags_from")
-    )
+    condition     = contains(["SERVICE", "TASK_DEFINITION"], var.propagate_tags_from)
     error_message = "Valid values for tag propagation are SERVICE or TASK_DEFINITION"
   }
+}
 
+variable "service_subnets" {
+  description = "List of subnets in which to launch the service containers/tasks"
+  type        = list(string)
+
+  nullable = false
 }
 
 variable "aws_vpc_id" {
