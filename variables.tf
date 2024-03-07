@@ -231,6 +231,12 @@ variable "alarm_settings" {
     names    = list(string)
     rollback = bool
   })
+
+  default = {
+    enable   = false
+    names    = []
+    rollback = false
+  }
 }
 
 variable "scaling_target_values" {
