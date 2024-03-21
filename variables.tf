@@ -247,8 +247,8 @@ variable "alarm_settings" {
   })
 
   default = {
-    enable   = false
     names    = []
+    enable   = false
     rollback = false
   }
 }
@@ -354,4 +354,11 @@ variable "force_new_deployment" {
   type        = bool
 
   default = false
+}
+
+variable "container_ephemeral_storage" {
+  description = "Size of the ephemeral storage in GiB for container"
+  type        = number
+
+  default = 21
 }

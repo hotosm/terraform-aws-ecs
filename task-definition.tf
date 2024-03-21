@@ -4,6 +4,7 @@ resource "aws_ecs_task_definition" "main" {
   network_mode             = "awsvpc"
   cpu                      = lookup(var.container_capacity, "cpu")
   memory                   = lookup(var.container_capacity, "memory_mb")
+  ephemeral_storage        = var.container_ephemeral_storage
 
   runtime_platform {
     operating_system_family = "LINUX"
