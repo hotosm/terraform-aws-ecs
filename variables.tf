@@ -101,8 +101,8 @@ variable "efs_settings" {
     file_system_id     = string
     root_directory     = string
     access_point_id    = string
-    transit_encryption = string
-    iam_authz          = string
+    transit_encryption = optional(string, "ENABLED")
+    iam_authz          = optional(string, "DISABLED")
   })
 
   validation {
@@ -116,6 +116,8 @@ variable "efs_settings" {
 
     error_message = "IAM authorization needs to be ENABLED or DISABLED"
   }
+
+  default = null
 
 }
 
@@ -253,26 +255,60 @@ variable "alarm_settings" {
   }
 }
 
+variable "scale_by_cpu" {
+  description = "Enable CPU based scaling"
+  type = object({
+    enabled = bool
+    cpu_pct = number
+  })
+
+  default = {
+    enabled = false
+    cpu_pct = 85
+  }
+}
+
+variable "scale_by_memory" {
+  description = "Enable Memory based scaling"
+  type = object({
+    enabled    = bool
+    memory_pct = number
+  })
+
+  default = {
+    enabled    = false
+    memory_pct = 85
+  }
+}
+
+variable "load_balancer_settings" {
+  type = object({
+    enabled                 = optional(bool, false)
+    arn_suffix              = optional(string)
+    target_group_arn        = optional(string)
+    target_group_arn_suffix = optional(string)
+    scaling_request_count   = optional(number, 50)
+  })
+
+  default = {
+    enabled                 = false
+    arn_suffix              = ""
+    target_group_arn        = ""
+    target_group_arn_suffix = ""
+    scaling_request_count   = 50
+  }
+}
+
 variable "scaling_target_values" {
   type = object({
-    cpu_pct             = number
-    memory_pct          = number
-    request_count       = number
     container_min_count = number
     container_max_count = number
   })
 
   default = {
-    cpu_pct             = 85
-    memory_pct          = 85
-    request_count       = 50
     container_min_count = 2
     container_max_count = 20
   }
-
-  // TODO: validation - mem_pct max 99; mem_pct min 5;
-  // TODO: validation - cpu_pct max 99; cpu_pct min 5;
-  // TODO: validation - container_min_count min 1; max_count min 5;
 }
 
 variable "propagate_tags_from" {
@@ -325,28 +361,6 @@ variable "task_role_arn" {
   type        = string
 
   default = null
-}
-
-variable "load_balancer_enabled" {
-  description = "Enable if you need a load balancer for the service"
-  type        = bool
-
-  default = true
-}
-
-variable "load_balancer_arn_suffix" {
-  description = "Load Balancer ARN Suffix"
-  type        = string
-}
-
-variable "target_group_arn_suffix" {
-  description = "Target Group ARN suffix"
-  type        = string
-}
-
-variable "target_group_arn" {
-  description = "Target Group ARN"
-  type        = string
 }
 
 variable "force_new_deployment" {

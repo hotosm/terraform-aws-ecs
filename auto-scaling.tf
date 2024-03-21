@@ -13,7 +13,7 @@ resource "aws_appautoscaling_target" "main" {
 }
 
 resource "aws_appautoscaling_policy" "by-req" {
-  count = var.load_balancer_enabled ? 1 : 0
+  count = lookup(var.load_balancer_settings, "enabled") ? 1 : 0
 
   name        = "scale-by-request-count"
   policy_type = "TargetTrackingScaling"
@@ -24,19 +24,21 @@ resource "aws_appautoscaling_policy" "by-req" {
 
   target_tracking_scaling_policy_configuration {
 
-    target_value = lookup(var.scaling_target_values, "request_count")
+    target_value = lookup(var.load_balancer_settings, "scaling_request_count")
 
     predefined_metric_specification {
       predefined_metric_type = "ALBRequestCountPerTarget"
       resource_label = join("/", [
-        var.load_balancer_arn_suffix,
-        var.target_group_arn_suffix
+        lookup(var.load_balancer_settings, "arn_suffix"),
+        lookup(var.load_balancer_settings, "target_group_arn_suffix")
       ])
     }
   }
 }
 
 resource "aws_appautoscaling_policy" "by-mem" {
+  count = lookup(var.scale_by_memory, "enabled") ? 1 : 0
+
   name        = "scale-by-memory"
   policy_type = "TargetTrackingScaling"
 
@@ -46,7 +48,7 @@ resource "aws_appautoscaling_policy" "by-mem" {
 
   target_tracking_scaling_policy_configuration {
 
-    target_value = lookup(var.scaling_target_values, "memory_pct")
+    target_value = lookup(var.scale_by_memory, "memory_pct")
 
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageMemoryUtilization"
@@ -55,6 +57,8 @@ resource "aws_appautoscaling_policy" "by-mem" {
 }
 
 resource "aws_appautoscaling_policy" "by-cpu" {
+  count = lookup(var.scale_by_cpu, "enabled") ? 1 : 0
+
   name        = "scale-by-cpu"
   policy_type = "TargetTrackingScaling"
 
@@ -64,7 +68,7 @@ resource "aws_appautoscaling_policy" "by-cpu" {
 
   target_tracking_scaling_policy_configuration {
 
-    target_value = lookup(var.scaling_target_values, "cpu_pct")
+    target_value = lookup(var.scale_by_cpu, "cpu_pct")
 
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"

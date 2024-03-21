@@ -27,15 +27,15 @@ resource "aws_ecs_service" "main" {
   deployment_minimum_healthy_percent = lookup(var.tasks_count, "min_healthy_pct")
 
   enable_ecs_managed_tags           = true
-  health_check_grace_period_seconds = var.load_balancer_enabled ? 400 : null
+  health_check_grace_period_seconds = lookup(var.load_balancer_settings, "enabled") ? 400 : null
 
   launch_type = "FARGATE"
 
   dynamic "load_balancer" {
-    for_each = var.load_balancer_enabled ? ["a"] : []
+    for_each = lookup(var.load_balancer_settings, "enabled") ? ["a"] : []
 
     content {
-      target_group_arn = var.target_group_arn
+      target_group_arn = lookup(var.load_balancer_settings, "target_group_arn")
       container_name   = lookup(var.container_settings, "service_name")
       container_port   = lookup(var.container_settings, "app_port")
     }
