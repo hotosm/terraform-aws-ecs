@@ -28,7 +28,7 @@ data "aws_iam_policy_document" "secrets-manager" {
       "secretsmanager:GetSecretValue"
     ]
 
-    resources = tolist([for o in var.container_secrets : o["valueFrom"]])
+    resources = values(var.container_secrets)
   }
 
   statement {
