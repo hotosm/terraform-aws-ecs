@@ -57,8 +57,8 @@ resource "aws_ecs_task_definition" "main" {
         },
       ]
 
-      environment = var.container_envvars
-      secrets     = var.container_secrets
+      environment = [for k, v in var.container_envvars : { name = k, value = v }]
+      secrets     = [for k, v in var.container_secrets : { name = k, valueFrom = v }]
 
       mountPoints = var.efs_enabled ? [
         {

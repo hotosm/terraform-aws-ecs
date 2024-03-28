@@ -18,10 +18,7 @@ variable "default_tags" {
 
 variable "container_secrets" {
   description = "Secrets from secrets manager passed on to the containers"
-  type = list(object({
-    name      = string
-    valueFrom = string
-  }))
+  type        = map(string)
 
   nullable = true
   default  = null
@@ -29,10 +26,7 @@ variable "container_secrets" {
 
 variable "container_envvars" {
   description = "Environment variables passed on to the containers"
-  type = list(object({
-    name  = string
-    value = string
-  }))
+  type        = map(string)
 
   nullable = true
   default  = null
