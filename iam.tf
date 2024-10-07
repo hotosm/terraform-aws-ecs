@@ -21,16 +21,21 @@ data "aws_kms_alias" "secretsmanager" {
 }
 
 data "aws_iam_policy_document" "secrets-manager" {
+  # Statement for getting secret values from Secrets Manager
   statement {
     sid = "1"
 
     actions = [
-      "secretsmanager:GetSecretValue"
+      "secretsmanager:GetSecretValue",
     ]
 
-    resources = values(var.container_secrets)
+    # Dynamically reference the ARNs of the secrets
+    resources = [
+      for secret in var.container_secrets : secret.valueFrom
+    ]
   }
 
+  # Statement for decrypting KMS-encrypted secrets
   statement {
     sid = "2"
 
@@ -38,6 +43,7 @@ data "aws_iam_policy_document" "secrets-manager" {
       "kms:Decrypt"
     ]
 
+    # Reference the KMS alias for Secrets Manager
     resources = [
       data.aws_kms_alias.secretsmanager.arn
     ]
