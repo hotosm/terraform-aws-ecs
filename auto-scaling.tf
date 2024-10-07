@@ -4,7 +4,7 @@ resource "aws_appautoscaling_target" "main" {
 
   resource_id = join("/", [
     "service",
-    var.ecs_cluster_name,
+    aws_ecs_cluster.main.name,
     aws_ecs_service.main.name
   ])
 

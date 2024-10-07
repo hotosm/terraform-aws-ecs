@@ -3,6 +3,13 @@ variable "service_name" {
   type        = string
 }
 
+variable "deployment_environment" {
+  description = "Deployment flavour or variant identified by this name"
+  type        = string
+
+  default = "dev"
+}
+
 variable "default_tags" {
   description = "Default resource tags to apply to AWS resources"
   type        = map(string)
@@ -16,12 +23,19 @@ variable "default_tags" {
   }
 }
 
-variable "container_secrets" {
-  description = "Secrets from secrets manager passed on to the containers"
-  type        = map(string)
+variable "aws_region" {
+  description = "Region to create log-group for ecs service"
+  type = string  
+}
 
+variable "container_secrets" {
+  description = "Secrets from Secrets Manager to pass to containers"
+  type        = list(object({
+    name      = string
+    valueFrom = string
+  }))
   nullable = true
-  default  = null
+  default  = []
 }
 
 variable "container_envvars" {
@@ -338,17 +352,19 @@ variable "service_security_groups" {
   default = []
 }
 
-variable "ecs_cluster_name" {
-  description = "Name of the ECS cluster in which to launch the services"
-  type        = string
+# These are already generated based on project varibles.
+# variable "ecs_cluster_name" {
+#   description = "Name of the ECS cluster in which to launch the services"
+#   type        = string
 
-  nullable = false
-}
+#   nullable = true
+# }
 
-variable "ecs_cluster_arn" {
-  description = "ARN of the ECS cluster in which to launch the services"
-  type        = string
-}
+# variable "ecs_cluster_arn" {
+#   description = "ARN of the ECS cluster in which to launch the services"
+#   type        = string
+#   nullable = true
+# }
 
 variable "task_role_arn" {
   description = "ARN of task (guest-app) role"
@@ -369,4 +385,33 @@ variable "container_ephemeral_storage" {
   type        = number
 
   default = 21
+}
+
+variable "org_meta" {
+  description = "Org info for secrets manager prefix"
+  type = map(string)
+  default = {
+    name       = "hotosm.org"
+    short_name = "hot"
+    url        = "hotosm.org"
+  }
+}
+
+variable "project_meta" {
+  description = "Metadata relating to the project for which the VPC is being created"
+  type        = map(string)
+
+  default = {
+    name       = "tasking-manager"
+    short_name = "tm"
+    version    = "1.1.2"
+    image_tag  = "develop"
+    url        = "https://tasks.hotosm.org"
+  }
+}
+
+variable "s3_bucket_name" {
+  type    = string
+  description = "S3 Bucket to store state files for terraform"
+  default = "tasking-manager-terraform"
 }
