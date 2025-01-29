@@ -5,7 +5,7 @@ resource "aws_cloudwatch_log_group" "main" {
 }
 
 resource "aws_ecs_service" "main" {
-  name            = aws_ecs_cluster.main.name
+  name            = lookup(var.container_settings, "service_name")
   cluster         = aws_ecs_cluster.main.arn
   task_definition = aws_ecs_task_definition.main.arn
 
