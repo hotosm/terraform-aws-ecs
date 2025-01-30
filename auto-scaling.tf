@@ -168,14 +168,15 @@ resource "aws_appautoscaling_policy" "scale_down_by_memory_down" {
     cooldown                = 60
 
     step_adjustment {
-      metric_interval_upper_bound = 45
-      scaling_adjustment          = -1
+      metric_interval_upper_bound = 45 
+      scaling_adjustment          = -1 
     }
+
     step_adjustment {
-      metric_interval_lower_bound = 45
-      metric_interval_upper_bound = 100
-      scaling_adjustment          = 0
+      metric_interval_lower_bound = 45 
+      scaling_adjustment          = 0 
     }
+
   }
 }
 
