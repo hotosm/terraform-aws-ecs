@@ -166,13 +166,14 @@ resource "aws_appautoscaling_policy" "scale_down_by_memory_down" {
     adjustment_type         = "ChangeInCapacity"
     metric_aggregation_type = "Average"
     cooldown                = 60
+
     step_adjustment {
-      metric_interval_lower_bound = 0
-      metric_interval_upper_bound = 40
+      metric_interval_upper_bound = 45
       scaling_adjustment          = -1
     }
     step_adjustment {
-      metric_interval_lower_bound = 40
+      metric_interval_lower_bound = 45
+      metric_interval_upper_bound = 100
       scaling_adjustment          = 0
     }
   }
@@ -227,18 +228,19 @@ resource "aws_appautoscaling_policy" "scale_down_by_large_requests_down" {
     cooldown                = 60
 
     step_adjustment {
-      metric_interval_lower_bound = 0
-      metric_interval_upper_bound = 50 # When request count is between 0 and 100
-      scaling_adjustment          = -2  # Decrease by 2 tasks
+      metric_interval_upper_bound = 50 
+      scaling_adjustment          = -2 
     }
+
     step_adjustment {
       metric_interval_lower_bound = 50
       metric_interval_upper_bound = 100
       scaling_adjustment          = -1
     }
+
     step_adjustment {
       metric_interval_lower_bound = 100
-      scaling_adjustment          = -0
+      scaling_adjustment          = 0
     }
   }
 }
