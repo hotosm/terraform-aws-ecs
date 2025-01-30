@@ -55,8 +55,8 @@ resource "aws_cloudwatch_metric_alarm" "memory_high_down" {
   metric_name         = "MemoryUtilization"
   namespace           = "AWS/ECS"
   statistic           = "Average"
-  threshold           = 30 # Trigger when memory < 40%
-  alarm_description   = "Alarm when memory utilization exceeds 40%"
+  threshold           = 45 # Trigger when memory < 45%
+  alarm_description   = "Alarm when memory utilization is lower then 45%"
   dimensions = {
     ClusterName = aws_ecs_cluster.main.name
     ServiceName = aws_ecs_service.main.name
@@ -74,7 +74,7 @@ resource "aws_cloudwatch_metric_alarm" "request_count_high" {
   namespace           = "AWS/ApplicationELB"
   statistic           = "Sum"
   threshold           = 100
-  alarm_description   = "Alarm when the average request count exceeds 150 per target add 1 unit."
+  alarm_description   = "Alarm when the average request count exceeds 100 per target for 30 seconds."
   dimensions = {
     LoadBalancer = lookup(var.load_balancer_settings, "arn_suffix")
     TargetGroup  = lookup(var.load_balancer_settings, "target_group_arn_suffix")
@@ -92,7 +92,7 @@ resource "aws_cloudwatch_metric_alarm" "request_count_super_high" {
   namespace           = "AWS/ApplicationELB"
   statistic           = "Sum"
   threshold           = 500
-  alarm_description   = "Alarm when the average request count exceeds 1000 per target add 2 unit."
+  alarm_description   = "Alarm when the average request count exceeds 500 per target add 2 unit."
   dimensions = {
     LoadBalancer = lookup(var.load_balancer_settings, "arn_suffix")
     TargetGroup  = lookup(var.load_balancer_settings, "target_group_arn_suffix")
@@ -110,7 +110,7 @@ resource "aws_cloudwatch_metric_alarm" "request_count_super_high_down" {
   namespace           = "AWS/ApplicationELB"
   statistic           = "Sum"
   threshold           = 50
-  alarm_description   = "Alarm when the average request count exceeds 1000 per target add 2 unit."
+  alarm_description   = "Alarm when the average request count exceeds 50 per target remove 2 unit."
   dimensions = {
     LoadBalancer = lookup(var.load_balancer_settings, "arn_suffix")
     TargetGroup  = lookup(var.load_balancer_settings, "target_group_arn_suffix")
@@ -118,9 +118,6 @@ resource "aws_cloudwatch_metric_alarm" "request_count_super_high_down" {
 
   alarm_actions = [aws_appautoscaling_policy.scale_down_by_large_requests_down.arn]
 }
-################################################################
-
-
 
 resource "aws_appautoscaling_policy" "scale_up_by_memory" {
   name               = "scale-up-by-memory"
@@ -132,14 +129,13 @@ resource "aws_appautoscaling_policy" "scale_up_by_memory" {
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
     metric_aggregation_type = "Average"
-    cooldown                = 60
+    cooldown                = 30
     step_adjustment {
       metric_interval_lower_bound = 0
       scaling_adjustment          = 1 # Increase by 1 task
     }
   }
 }
-
 
 resource "aws_appautoscaling_policy" "scale_up_by_cpu" {
   name               = "scale-up-by-cpu"
@@ -169,17 +165,15 @@ resource "aws_appautoscaling_policy" "scale_down_by_memory_down" {
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
     metric_aggregation_type = "Average"
-    cooldown                = 120
+    cooldown                = 60
     step_adjustment {
       metric_interval_lower_bound = 0
       metric_interval_upper_bound = 40
       scaling_adjustment          = -1
     }
-    # New Step (Handle cases above 40%)
     step_adjustment {
       metric_interval_lower_bound = 40
       scaling_adjustment          = 0
-      # No scaling if memory is above 40%
     }
   }
 }
@@ -212,7 +206,7 @@ resource "aws_appautoscaling_policy" "scale_up_by_large_requests" {
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
     metric_aggregation_type = "Average"
-    cooldown                = 120
+    cooldown                = 30
     step_adjustment {
       metric_interval_lower_bound = 0
       scaling_adjustment          = 2 # Increase by 2 tasks
@@ -234,13 +228,17 @@ resource "aws_appautoscaling_policy" "scale_down_by_large_requests_down" {
 
     step_adjustment {
       metric_interval_lower_bound = 0
-      metric_interval_upper_bound = 100 # When request count is between 0 and 100
+      metric_interval_upper_bound = 50 # When request count is between 0 and 100
       scaling_adjustment          = -2  # Decrease by 2 tasks
     }
     step_adjustment {
+      metric_interval_lower_bound = 50
+      metric_interval_upper_bound = 100
+      scaling_adjustment          = -1
+    }
+    step_adjustment {
       metric_interval_lower_bound = 100
-      scaling_adjustment          = 0
-      # No scaling if request count is above 100
+      scaling_adjustment          = -0
     }
   }
 }
