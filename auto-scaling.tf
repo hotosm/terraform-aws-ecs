@@ -104,13 +104,13 @@ resource "aws_cloudwatch_metric_alarm" "request_count_super_high" {
 resource "aws_cloudwatch_metric_alarm" "request_count_super_high_down" {
   alarm_name          = "SuperHighRequestCountDown"
   comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = 1
+  evaluation_periods  = 3
   period              = 60
   metric_name         = "RequestCountPerTarget"
   namespace           = "AWS/ApplicationELB"
   statistic           = "Sum"
   threshold           = 50
-  alarm_description   = "Alarm when the average request count exceeds 50 per target remove 2 unit."
+  alarm_description   = "Alarm when the average request count decrease to 50 per target remove 2 unit."
   dimensions = {
     LoadBalancer = lookup(var.load_balancer_settings, "arn_suffix")
     TargetGroup  = lookup(var.load_balancer_settings, "target_group_arn_suffix")
