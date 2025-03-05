@@ -27,8 +27,8 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
     ClusterName = aws_ecs_cluster.main.name
     ServiceName = aws_ecs_service.main.name
   }
-  alarm_actions       = [aws_appautoscaling_policy.scale_up_by_cpu.arn]
-  ok_actions          = [aws_appautoscaling_policy.scale_down_by_cpu.arn]
+  alarm_actions       = [aws_appautoscaling_policy.scale_up_by_cpu[count.index].arn]
+  ok_actions          = [aws_appautoscaling_policy.scale_down_by_cpu[count.index].arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "memory_high" {
@@ -47,8 +47,8 @@ resource "aws_cloudwatch_metric_alarm" "memory_high" {
     ServiceName = aws_ecs_service.main.name
   }
 
-  alarm_actions = [aws_appautoscaling_policy.scale_up_by_memory.arn]
-  ok_actions    = [aws_appautoscaling_policy.scale_down_by_memory.arn]
+  alarm_actions = [aws_appautoscaling_policy.scale_up_by_memory[count.index].arn]
+  ok_actions    = [aws_appautoscaling_policy.scale_down_by_memory[count.index].arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "request_count_high" {
@@ -67,8 +67,8 @@ resource "aws_cloudwatch_metric_alarm" "request_count_high" {
     TargetGroup  = lookup(var.load_balancer_settings, "target_group_arn_suffix")
   }
 
-  alarm_actions = [aws_appautoscaling_policy.scale_up_by_requests.arn]
-  ok_actions = [aws_appautoscaling_policy.scale_down_by_requests.arn]
+  alarm_actions = [aws_appautoscaling_policy.scale_up_by_requests[count.index].arn]
+  ok_actions = [aws_appautoscaling_policy.scale_down_by_requests[count.index].arn]
 }
 
 resource "aws_cloudwatch_metric_alarm" "request_count_super_high" {
@@ -87,8 +87,8 @@ resource "aws_cloudwatch_metric_alarm" "request_count_super_high" {
     TargetGroup  = lookup(var.load_balancer_settings, "target_group_arn_suffix")
   }
 
-  alarm_actions = [aws_appautoscaling_policy.scale_up_by_large_requests.arn]
-  ok_actions = [aws_appautoscaling_policy.scale_down_by_large_requests.arn]
+  alarm_actions = [aws_appautoscaling_policy.scale_up_by_large_requests[count.index].arn]
+  ok_actions = [aws_appautoscaling_policy.scale_down_by_large_requests[count.index].arn]
 }
 
 resource "aws_appautoscaling_policy" "scale_up_by_cpu" {
@@ -150,7 +150,7 @@ resource "aws_appautoscaling_policy" "scale_up_by_memory" {
 
 resource "aws_appautoscaling_policy" "scale_down_by_memory" {
   count = lookup(var.scale_by_memory, "enabled") ? 1 : 0
-  name               = "scale-down-by-memory-down"
+  name               = "scale-down-by-memory"
   policy_type        = "StepScaling"
   resource_id        = aws_appautoscaling_target.main.resource_id
   scalable_dimension = aws_appautoscaling_target.main.scalable_dimension
@@ -190,7 +190,7 @@ resource "aws_appautoscaling_policy" "scale_up_by_requests" {
 
 resource "aws_appautoscaling_policy" "scale_down_by_requests" {
   count = lookup(var.scale_by_request_count, "enabled") ? 1 : 0
-  name               = "scale-up-by-requests"
+  name               = "scale-down-by-requests"
   policy_type        = "StepScaling"
   resource_id        = aws_appautoscaling_target.main.resource_id
   scalable_dimension = aws_appautoscaling_target.main.scalable_dimension
@@ -228,7 +228,7 @@ resource "aws_appautoscaling_policy" "scale_up_by_large_requests" {
 
 resource "aws_appautoscaling_policy" "scale_down_by_large_requests" {
   count = lookup(var.scale_by_large_request_count, "enabled") ? 1 : 0
-  name               = "scale-by-large-requests_down"
+  name               = "scale-down-by-large-requests_down"
   policy_type        = "StepScaling"
   resource_id        = aws_appautoscaling_target.main.resource_id
   scalable_dimension = aws_appautoscaling_target.main.scalable_dimension
