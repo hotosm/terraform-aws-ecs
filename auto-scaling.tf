@@ -44,10 +44,14 @@ resource "aws_appautoscaling_policy" "scale_up_by_cpu" {
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
     metric_aggregation_type = "Average"
-    cooldown                = var.cpu_scaling_config.cooldown
-    step_adjustment {
-      metric_interval_lower_bound = 0
-      scaling_adjustment          = var.cpu_scaling_config.scale_up_adjustment
+    cooldown                = var.cpu_scaling_config.scale_up_cooldown
+    dynamic "step_adjustment" {
+      for_each = var.cpu_scaling_config.scale_up_steps
+      content {
+        metric_interval_lower_bound = step_adjustment.value.lower_bound
+        metric_interval_upper_bound = step_adjustment.value.upper_bound
+        scaling_adjustment          = step_adjustment.value.adjustment
+      }
     }
   }
 }
@@ -64,10 +68,14 @@ resource "aws_appautoscaling_policy" "scale_down_by_cpu" {
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
     metric_aggregation_type = "Average"
-    cooldown                = var.cpu_scaling_config.cooldown
-    step_adjustment {
-      metric_interval_lower_bound = 0
-      scaling_adjustment          = var.cpu_scaling_config.scale_down_adjustment
+    cooldown                = var.cpu_scaling_config.scale_down_cooldown
+    dynamic "step_adjustment" {
+      for_each = var.cpu_scaling_config.scale_down_steps
+      content {
+        metric_interval_lower_bound = step_adjustment.value.lower_bound
+        metric_interval_upper_bound = step_adjustment.value.upper_bound
+        scaling_adjustment          = step_adjustment.value.adjustment
+      }
     }
   }
 }
@@ -105,9 +113,13 @@ resource "aws_appautoscaling_policy" "scale_up_by_memory" {
     adjustment_type         = "ChangeInCapacity"
     metric_aggregation_type = "Average"
     cooldown                = var.memory_scaling_config.scale_up_cooldown
-    step_adjustment {
-      metric_interval_lower_bound = 0
-      scaling_adjustment          = var.memory_scaling_config.scale_up_adjustment
+    dynamic "step_adjustment" {
+      for_each = var.memory_scaling_config.scale_up_steps
+      content {
+        metric_interval_lower_bound = step_adjustment.value.lower_bound
+        metric_interval_upper_bound = step_adjustment.value.upper_bound
+        scaling_adjustment          = step_adjustment.value.adjustment
+      }
     }
   }
 }
@@ -125,9 +137,13 @@ resource "aws_appautoscaling_policy" "scale_down_by_memory" {
     adjustment_type         = "ChangeInCapacity"
     metric_aggregation_type = "Average"
     cooldown                = var.memory_scaling_config.scale_down_cooldown
-    step_adjustment {
-      metric_interval_lower_bound = 0
-      scaling_adjustment          = var.memory_scaling_config.scale_down_adjustment
+    dynamic "step_adjustment" {
+      for_each = var.memory_scaling_config.scale_down_steps
+      content {
+        metric_interval_lower_bound = step_adjustment.value.lower_bound
+        metric_interval_upper_bound = step_adjustment.value.upper_bound
+        scaling_adjustment          = step_adjustment.value.adjustment
+      }
     }
   }
 }
@@ -142,8 +158,8 @@ resource "aws_cloudwatch_metric_alarm" "request_count_scale_up" {
   metric_name         = "RequestCountPerTarget"
   namespace           = "AWS/ApplicationELB"
   statistic           = "Sum"
-  threshold           = var.request_scaling_config.scale_up_threshold
-  alarm_description   = "Alarm when request count per target exceeds ${var.request_scaling_config.scale_up_threshold}"
+  threshold           = var.request_scaling_config.threshold
+  alarm_description   = "Alarm when request count per target exceeds ${var.request_scaling_config.threshold}"
   dimensions = {
     LoadBalancer = lookup(var.load_balancer_settings, "arn_suffix")
     TargetGroup  = lookup(var.load_balancer_settings, "target_group_arn_suffix")

@@ -395,13 +395,22 @@ variable "s3_bucket_name" {
 variable "cpu_scaling_config" {
   description = "Configuration for CPU-based auto-scaling of the ECS service"
   type = object({
-    enabled               = bool   # Whether CPU scaling is enabled
-    threshold             = number # CPU utilization percentage threshold (e.g., 70 for 70%)
-    evaluation_periods    = number # Number of periods to evaluate the metric
-    period                = number # Length of each evaluation period in seconds
-    cooldown              = number # Cooldown period in seconds for both scale-up and scale-down
-    scale_up_adjustment   = number # Number of tasks to add when scaling up
-    scale_down_adjustment = number # Number of tasks to remove when scaling down (typically negative)
+    enabled             = bool
+    threshold           = number
+    evaluation_periods  = number
+    period              = number
+    scale_up_cooldown   = number
+    scale_down_cooldown = number
+    scale_up_steps = list(object({
+      lower_bound = number
+      upper_bound = number
+      adjustment  = number
+    }))
+    scale_down_steps = list(object({
+      lower_bound = number
+      upper_bound = number
+      adjustment  = number
+    }))
   })
   default = null
 }
@@ -409,14 +418,22 @@ variable "cpu_scaling_config" {
 variable "memory_scaling_config" {
   description = "Configuration for memory-based auto-scaling of the ECS service"
   type = object({
-    enabled               = bool   # Whether memory scaling is enabled
-    threshold             = number # Memory utilization percentage threshold (e.g., 75 for 75%)
-    evaluation_periods    = number # Number of periods to evaluate the metric
-    period                = number # Length of each evaluation period in seconds
-    scale_up_cooldown     = number # Cooldown period in seconds for scale-up
-    scale_down_cooldown   = number # Cooldown period in seconds for scale-down
-    scale_up_adjustment   = number # Number of tasks to add when scaling up
-    scale_down_adjustment = number # Number of tasks to remove when scaling down (typically negative)
+    enabled             = bool
+    threshold           = number
+    evaluation_periods  = number
+    period              = number
+    scale_up_cooldown   = number
+    scale_down_cooldown = number
+    scale_up_steps = list(object({
+      lower_bound = number
+      upper_bound = number
+      adjustment  = number
+    }))
+    scale_down_steps = list(object({
+      lower_bound = number
+      upper_bound = number
+      adjustment  = number
+    }))
   })
   default = null
 }
@@ -424,13 +441,12 @@ variable "memory_scaling_config" {
 variable "request_scaling_config" {
   description = "Configuration for request count-based auto-scaling of the ECS service"
   type = object({
-    enabled              = bool   # Whether request count scaling is enabled
-    scale_up_threshold   = number # Request count per target threshold for scaling up
-    scale_down_threshold = number # Request count per target threshold for scaling down
-    evaluation_periods   = number # Number of periods to evaluate the metric
-    period               = number # Length of each evaluation period in seconds
-    scale_up_cooldown    = number # Cooldown period in seconds for scale-up
-    scale_down_cooldown  = number # Cooldown period in seconds for scale-down
+    enabled             = bool   # Whether request count scaling is enabled
+    threshold           = number # Request count per target threshold for scaling down
+    evaluation_periods  = number # Number of periods to evaluate the metric
+    period              = number # Length of each evaluation period in seconds
+    scale_up_cooldown   = number # Cooldown period in seconds for scale-up
+    scale_down_cooldown = number # Cooldown period in seconds for scale-down
     scale_up_steps = list(object({
       lower_bound = number # Lower bound relative to scale_up_threshold (e.g., 0)
       upper_bound = number # Upper bound relative to scale_up_threshold (null for no upper limit)
