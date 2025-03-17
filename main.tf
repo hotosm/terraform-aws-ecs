@@ -9,6 +9,8 @@ resource "aws_ecs_service" "main" {
   cluster         = aws_ecs_cluster.main.arn
   task_definition = aws_ecs_task_definition.main.arn
 
+  enable_execute_command = var.enable_execute_command
+
   dynamic "alarms" {
     for_each = lookup(var.alarm_settings, "enable") ? lookup(var.alarm_settings, "names") : []
 

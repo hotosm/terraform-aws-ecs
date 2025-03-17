@@ -147,6 +147,13 @@ variable "tasks_count" {
   }
 }
 
+variable "enable_execute_command" {
+  type        = bool
+  description = "Enable ECS Execute"
+
+  default = false
+}
+
 variable "log_configuration" {
   description = "Log configuration"
   type = object({
