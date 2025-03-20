@@ -15,7 +15,7 @@ resource "aws_appautoscaling_target" "main" {
 # CPU High Alarm
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   count               = var.cpu_scaling_config != null ? 1 : 0
-  alarm_name          = "HighCPUUtilization"
+  alarm_name          = "${lookup(var.container_settings, "service_name")}/HighCPUUtilization"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.cpu_scaling_config.evaluation_periods
   period              = var.cpu_scaling_config.period
@@ -83,7 +83,7 @@ resource "aws_appautoscaling_policy" "scale_down_by_cpu" {
 # Memory High Alarm
 resource "aws_cloudwatch_metric_alarm" "memory_high" {
   count               = var.memory_scaling_config != null ? 1 : 0
-  alarm_name          = "HighMemoryUtilization"
+  alarm_name          = "${lookup(var.container_settings, "service_name")}/HighMemoryUtilization"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.memory_scaling_config.evaluation_periods
   period              = var.memory_scaling_config.period
@@ -151,7 +151,7 @@ resource "aws_appautoscaling_policy" "scale_down_by_memory" {
 # Request Count Scale-Up Alarm
 resource "aws_cloudwatch_metric_alarm" "request_count_scale_up" {
   count               = var.request_scaling_config != null ? 1 : 0
-  alarm_name          = "RequestCountScaleUp"
+  alarm_name          = "${lookup(var.container_settings, "service_name")}/RequestCountScaleUp"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.request_scaling_config.evaluation_periods
   period              = var.request_scaling_config.period
