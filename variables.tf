@@ -288,6 +288,13 @@ variable "load_balancer_settings" {
   }
 }
 
+variable "health_check_grace_period_seconds" {
+  type        = number
+  description = "Health check grace period in seconds"
+
+  default = 30
+}
+
 variable "scaling_target_values" {
   type = object({
     container_min_count = number
