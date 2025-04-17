@@ -1,7 +1,15 @@
+# Log Group Defination for the ECS Task
+resource "aws_cloudwatch_log_group" "main" {
+  name              = var.log_configuration.options.awslogs-group
+  retention_in_days = 7
+}
+
 resource "aws_ecs_service" "main" {
-  name            = var.service_name
-  cluster         = var.ecs_cluster_arn
+  name            = lookup(var.container_settings, "service_name")
+  cluster         = aws_ecs_cluster.main.arn
   task_definition = aws_ecs_task_definition.main.arn
+
+  enable_execute_command = var.enable_execute_command
 
   dynamic "alarms" {
     for_each = lookup(var.alarm_settings, "enable") ? lookup(var.alarm_settings, "names") : []
@@ -27,7 +35,7 @@ resource "aws_ecs_service" "main" {
   deployment_minimum_healthy_percent = lookup(var.tasks_count, "min_healthy_pct")
 
   enable_ecs_managed_tags           = true
-  health_check_grace_period_seconds = lookup(var.load_balancer_settings, "enabled") ? 400 : null
+  health_check_grace_period_seconds = lookup(var.load_balancer_settings, "enabled") ? try(var.health_check_grace_period_seconds, 20) : null
 
   launch_type = "FARGATE"
 
@@ -37,7 +45,7 @@ resource "aws_ecs_service" "main" {
     content {
       target_group_arn = lookup(var.load_balancer_settings, "target_group_arn")
       container_name   = lookup(var.container_settings, "service_name")
-      container_port   = lookup(var.container_settings, "app_port")
+      container_port   = 5000
     }
   }
 

@@ -51,14 +51,19 @@ resource "aws_ecs_task_definition" "main" {
 
       portMappings = [
         {
-          containerPort = lookup(var.container_settings, "app_port")
-          hostPort      = lookup(var.container_settings, "app_port")
+          containerPort = 5000
+          hostPort      = 5000
           protocol      = var.app_port_protocol
         },
       ]
 
       environment = [for k, v in var.container_envvars : { name = k, value = v }]
-      secrets     = [for k, v in var.container_secrets : { name = k, valueFrom = v }]
+      secrets = [
+        for secret in var.container_secrets : {
+          name      = secret.name
+          valueFrom = secret.valueFrom  # This will take the value from the input directly
+        }
+      ]
 
       mountPoints = var.efs_enabled ? [
         {
@@ -68,15 +73,21 @@ resource "aws_ecs_task_definition" "main" {
         }
       ] : null
 
-      linuxParameters = {
-        capabilities = var.linux_capabilities
-      }
+      # linuxParameters = {
+      #   capabilities = var.linux_capabilities
+      # }
 
-      logConfiguration = var.log_configuration
+      logConfiguration = {
+        logdriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.main.name
+          awslogs-region        = var.log_configuration.options.awslogs-region 
+          awslogs-stream-prefix = var.log_configuration.options.awslogs-stream-prefix 
+        }
+      }
     }
   ])
 
   execution_role_arn = aws_iam_role.ecs-agent.arn
   task_role_arn      = var.task_role_arn
 }
-

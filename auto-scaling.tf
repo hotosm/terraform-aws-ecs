@@ -4,7 +4,7 @@ resource "aws_appautoscaling_target" "main" {
 
   resource_id = join("/", [
     "service",
-    var.ecs_cluster_name,
+    aws_ecs_cluster.main.name,
     aws_ecs_service.main.name
   ])
 
@@ -12,67 +12,206 @@ resource "aws_appautoscaling_target" "main" {
   service_namespace  = "ecs"
 }
 
-resource "aws_appautoscaling_policy" "by-req" {
-  count = lookup(var.load_balancer_settings, "enabled") ? 1 : 0
+# CPU High Alarm
+resource "aws_cloudwatch_metric_alarm" "cpu_high" {
+  count               = var.cpu_scaling_config != null ? 1 : 0
+  alarm_name          = "${lookup(var.container_settings, "service_name")}/HighCPUUtilization"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = var.cpu_scaling_config.evaluation_periods
+  period              = var.cpu_scaling_config.period
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  statistic           = "Average"
+  threshold           = var.cpu_scaling_config.threshold
+  alarm_description   = "Alarm when CPU exceeds ${var.cpu_scaling_config.threshold}%"
+  dimensions = {
+    ClusterName = aws_ecs_cluster.main.name
+    ServiceName = aws_ecs_service.main.name
+  }
+  alarm_actions = [aws_appautoscaling_policy.scale_up_by_cpu[count.index].arn]
+  ok_actions    = [aws_appautoscaling_policy.scale_down_by_cpu[count.index].arn]
+}
 
-  name        = "scale-by-request-count"
-  policy_type = "TargetTrackingScaling"
-
+# CPU Scale-Up Policy
+resource "aws_appautoscaling_policy" "scale_up_by_cpu" {
+  count              = var.cpu_scaling_config != null ? 1 : 0
+  name               = "scale-up-by-cpu"
+  policy_type        = "StepScaling"
   resource_id        = aws_appautoscaling_target.main.resource_id
   scalable_dimension = aws_appautoscaling_target.main.scalable_dimension
   service_namespace  = aws_appautoscaling_target.main.service_namespace
 
-  target_tracking_scaling_policy_configuration {
-
-    target_value = lookup(var.load_balancer_settings, "scaling_request_count")
-
-    predefined_metric_specification {
-      predefined_metric_type = "ALBRequestCountPerTarget"
-      resource_label = join("/", [
-        lookup(var.load_balancer_settings, "arn_suffix"),
-        lookup(var.load_balancer_settings, "target_group_arn_suffix")
-      ])
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    metric_aggregation_type = "Average"
+    cooldown                = var.cpu_scaling_config.scale_up_cooldown
+    dynamic "step_adjustment" {
+      for_each = var.cpu_scaling_config.scale_up_steps
+      content {
+        metric_interval_lower_bound = step_adjustment.value.lower_bound
+        metric_interval_upper_bound = step_adjustment.value.upper_bound
+        scaling_adjustment          = step_adjustment.value.adjustment
+      }
     }
   }
 }
 
-resource "aws_appautoscaling_policy" "by-mem" {
-  count = lookup(var.scale_by_memory, "enabled") ? 1 : 0
-
-  name        = "scale-by-memory"
-  policy_type = "TargetTrackingScaling"
-
+# CPU Scale-Down Policy
+resource "aws_appautoscaling_policy" "scale_down_by_cpu" {
+  count              = var.cpu_scaling_config != null ? 1 : 0
+  name               = "scale-down-by-cpu"
+  policy_type        = "StepScaling"
   resource_id        = aws_appautoscaling_target.main.resource_id
   scalable_dimension = aws_appautoscaling_target.main.scalable_dimension
   service_namespace  = aws_appautoscaling_target.main.service_namespace
 
-  target_tracking_scaling_policy_configuration {
-
-    target_value = lookup(var.scale_by_memory, "memory_pct")
-
-    predefined_metric_specification {
-      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    metric_aggregation_type = "Average"
+    cooldown                = var.cpu_scaling_config.scale_down_cooldown
+    dynamic "step_adjustment" {
+      for_each = var.cpu_scaling_config.scale_down_steps
+      content {
+        metric_interval_lower_bound = step_adjustment.value.lower_bound
+        metric_interval_upper_bound = step_adjustment.value.upper_bound
+        scaling_adjustment          = step_adjustment.value.adjustment
+      }
     }
   }
 }
 
-resource "aws_appautoscaling_policy" "by-cpu" {
-  count = lookup(var.scale_by_cpu, "enabled") ? 1 : 0
+# Memory High Alarm
+resource "aws_cloudwatch_metric_alarm" "memory_high" {
+  count               = var.memory_scaling_config != null ? 1 : 0
+  alarm_name          = "${lookup(var.container_settings, "service_name")}/HighMemoryUtilization"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = var.memory_scaling_config.evaluation_periods
+  period              = var.memory_scaling_config.period
+  metric_name         = "MemoryUtilization"
+  namespace           = "AWS/ECS"
+  statistic           = "Average"
+  threshold           = var.memory_scaling_config.threshold
+  alarm_description   = "Alarm when memory exceeds ${var.memory_scaling_config.threshold}%"
+  dimensions = {
+    ClusterName = aws_ecs_cluster.main.name
+    ServiceName = aws_ecs_service.main.name
+  }
+  alarm_actions = [aws_appautoscaling_policy.scale_up_by_memory[count.index].arn]
+  ok_actions    = [aws_appautoscaling_policy.scale_down_by_memory[count.index].arn]
+}
 
-  name        = "scale-by-cpu"
-  policy_type = "TargetTrackingScaling"
-
+# Memory Scale-Up Policy
+resource "aws_appautoscaling_policy" "scale_up_by_memory" {
+  count              = var.memory_scaling_config != null ? 1 : 0
+  name               = "scale-up-by-memory"
+  policy_type        = "StepScaling"
   resource_id        = aws_appautoscaling_target.main.resource_id
   scalable_dimension = aws_appautoscaling_target.main.scalable_dimension
   service_namespace  = aws_appautoscaling_target.main.service_namespace
 
-  target_tracking_scaling_policy_configuration {
-
-    target_value = lookup(var.scale_by_cpu, "cpu_pct")
-
-    predefined_metric_specification {
-      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    metric_aggregation_type = "Average"
+    cooldown                = var.memory_scaling_config.scale_up_cooldown
+    dynamic "step_adjustment" {
+      for_each = var.memory_scaling_config.scale_up_steps
+      content {
+        metric_interval_lower_bound = step_adjustment.value.lower_bound
+        metric_interval_upper_bound = step_adjustment.value.upper_bound
+        scaling_adjustment          = step_adjustment.value.adjustment
+      }
     }
   }
 }
 
+# Memory Scale-Down Policy
+resource "aws_appautoscaling_policy" "scale_down_by_memory" {
+  count              = var.memory_scaling_config != null ? 1 : 0
+  name               = "scale-down-by-memory"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.main.resource_id
+  scalable_dimension = aws_appautoscaling_target.main.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.main.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    metric_aggregation_type = "Average"
+    cooldown                = var.memory_scaling_config.scale_down_cooldown
+    dynamic "step_adjustment" {
+      for_each = var.memory_scaling_config.scale_down_steps
+      content {
+        metric_interval_lower_bound = step_adjustment.value.lower_bound
+        metric_interval_upper_bound = step_adjustment.value.upper_bound
+        scaling_adjustment          = step_adjustment.value.adjustment
+      }
+    }
+  }
+}
+
+# Request Count Scale-Up Alarm
+resource "aws_cloudwatch_metric_alarm" "request_count_scale_up" {
+  count               = var.request_scaling_config != null ? 1 : 0
+  alarm_name          = "${lookup(var.container_settings, "service_name")}/RequestCountScaleUp"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = var.request_scaling_config.evaluation_periods
+  period              = var.request_scaling_config.period
+  metric_name         = "RequestCountPerTarget"
+  namespace           = "AWS/ApplicationELB"
+  statistic           = "Sum"
+  threshold           = var.request_scaling_config.threshold
+  alarm_description   = "Alarm when request count per target exceeds ${var.request_scaling_config.threshold}"
+  dimensions = {
+    LoadBalancer = lookup(var.load_balancer_settings, "arn_suffix")
+    TargetGroup  = lookup(var.load_balancer_settings, "target_group_arn_suffix")
+  }
+  alarm_actions = [aws_appautoscaling_policy.scale_up_by_requests[count.index].arn]
+  ok_actions    = [aws_appautoscaling_policy.scale_down_by_requests[count.index].arn]
+}
+
+# Request Count Scale-Up Policy
+resource "aws_appautoscaling_policy" "scale_up_by_requests" {
+  count              = var.request_scaling_config != null ? 1 : 0
+  name               = "scale-up-by-requests"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.main.resource_id
+  scalable_dimension = aws_appautoscaling_target.main.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.main.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    metric_aggregation_type = "Average"
+    cooldown                = var.request_scaling_config.scale_up_cooldown
+    dynamic "step_adjustment" {
+      for_each = var.request_scaling_config.scale_up_steps
+      content {
+        metric_interval_lower_bound = step_adjustment.value.lower_bound
+        metric_interval_upper_bound = step_adjustment.value.upper_bound
+        scaling_adjustment          = step_adjustment.value.adjustment
+      }
+    }
+  }
+}
+
+# Request Count Scale-Down Policy
+resource "aws_appautoscaling_policy" "scale_down_by_requests" {
+  count              = var.request_scaling_config != null ? 1 : 0
+  name               = "scale-down-by-requests"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.main.resource_id
+  scalable_dimension = aws_appautoscaling_target.main.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.main.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    metric_aggregation_type = "Average"
+    cooldown                = var.request_scaling_config.scale_down_cooldown
+    dynamic "step_adjustment" {
+      for_each = var.request_scaling_config.scale_down_steps
+      content {
+        metric_interval_lower_bound = step_adjustment.value.lower_bound
+        metric_interval_upper_bound = step_adjustment.value.upper_bound
+        scaling_adjustment          = step_adjustment.value.adjustment
+      }
+    }
+  }
+}

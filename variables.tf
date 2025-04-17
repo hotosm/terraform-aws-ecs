@@ -3,6 +3,13 @@ variable "service_name" {
   type        = string
 }
 
+variable "deployment_environment" {
+  description = "Deployment flavour or variant identified by this name"
+  type        = string
+
+  default = "dev"
+}
+
 variable "default_tags" {
   description = "Default resource tags to apply to AWS resources"
   type        = map(string)
@@ -16,12 +23,19 @@ variable "default_tags" {
   }
 }
 
-variable "container_secrets" {
-  description = "Secrets from secrets manager passed on to the containers"
-  type        = map(string)
+variable "aws_region" {
+  description = "Region to create log-group for ecs service"
+  type        = string
+}
 
+variable "container_secrets" {
+  description = "Secrets from Secrets Manager to pass to containers"
+  type = list(object({
+    name      = string
+    valueFrom = string
+  }))
   nullable = true
-  default  = null
+  default  = []
 }
 
 variable "container_envvars" {
@@ -100,13 +114,13 @@ variable "efs_settings" {
   })
 
   validation {
-    condition = contains(["ENABLED", "DISABLED"], lookup(var.efs_settings, "transit_encryption"))
+    condition = try(lookup(var.efs_settings, "enabled"), false) ? contains(["ENABLED", "DISABLED"], lookup(var.efs_settings, "transit_encryption")) : true
 
     error_message = "Transit encryption needs to be ENABLED or DISABLED"
   }
 
   validation {
-    condition = contains(["ENABLED", "DISABLED"], lookup(var.efs_settings, "iam_authz"))
+    condition = try(lookup(var.efs_settings, "enabled"), false) ? contains(["ENABLED", "DISABLED"], lookup(var.efs_settings, "iam_authz")) : true
 
     error_message = "IAM authorization needs to be ENABLED or DISABLED"
   }
@@ -131,6 +145,13 @@ variable "tasks_count" {
     min_healthy_pct = 50
     max_pct         = 200
   }
+}
+
+variable "enable_execute_command" {
+  type        = bool
+  description = "Enable ECS Execute"
+
+  default = false
 }
 
 variable "log_configuration" {
@@ -249,32 +270,6 @@ variable "alarm_settings" {
   }
 }
 
-variable "scale_by_cpu" {
-  description = "Enable CPU based scaling"
-  type = object({
-    enabled = bool
-    cpu_pct = number
-  })
-
-  default = {
-    enabled = false
-    cpu_pct = 85
-  }
-}
-
-variable "scale_by_memory" {
-  description = "Enable Memory based scaling"
-  type = object({
-    enabled    = bool
-    memory_pct = number
-  })
-
-  default = {
-    enabled    = false
-    memory_pct = 85
-  }
-}
-
 variable "load_balancer_settings" {
   type = object({
     enabled                 = optional(bool, false)
@@ -291,6 +286,13 @@ variable "load_balancer_settings" {
     target_group_arn_suffix = ""
     scaling_request_count   = 50
   }
+}
+
+variable "health_check_grace_period_seconds" {
+  type        = number
+  description = "Health check grace period in seconds"
+
+  default = 30
 }
 
 variable "scaling_target_values" {
@@ -338,17 +340,19 @@ variable "service_security_groups" {
   default = []
 }
 
-variable "ecs_cluster_name" {
-  description = "Name of the ECS cluster in which to launch the services"
-  type        = string
+# These are already generated based on project varibles.
+# variable "ecs_cluster_name" {
+#   description = "Name of the ECS cluster in which to launch the services"
+#   type        = string
 
-  nullable = false
-}
+#   nullable = true
+# }
 
-variable "ecs_cluster_arn" {
-  description = "ARN of the ECS cluster in which to launch the services"
-  type        = string
-}
+# variable "ecs_cluster_arn" {
+#   description = "ARN of the ECS cluster in which to launch the services"
+#   type        = string
+#   nullable = true
+# }
 
 variable "task_role_arn" {
   description = "ARN of task (guest-app) role"
@@ -369,4 +373,104 @@ variable "container_ephemeral_storage" {
   type        = number
 
   default = 21
+}
+
+variable "org_meta" {
+  description = "Org info for secrets manager prefix"
+  type        = map(string)
+  default = {
+    name       = "hotosm.org"
+    short_name = "hot"
+    url        = "hotosm.org"
+  }
+}
+
+variable "project_meta" {
+  description = "Metadata relating to the project for which the VPC is being created"
+  type        = map(string)
+
+  default = {
+    name       = "tasking-manager"
+    short_name = "tm"
+    version    = "1.1.2"
+    image_tag  = "develop"
+    url        = "https://tasks.hotosm.org"
+  }
+}
+
+variable "s3_bucket_name" {
+  type        = string
+  description = "S3 Bucket to store state files for terraform"
+  default     = "tasking-manager-terraform"
+}
+
+# variables.tf
+
+variable "cpu_scaling_config" {
+  description = "Configuration for CPU-based auto-scaling of the ECS service"
+  type = object({
+    enabled             = bool
+    threshold           = number
+    evaluation_periods  = number
+    period              = number
+    scale_up_cooldown   = number
+    scale_down_cooldown = number
+    scale_up_steps = list(object({
+      lower_bound = number
+      upper_bound = number
+      adjustment  = number
+    }))
+    scale_down_steps = list(object({
+      lower_bound = number
+      upper_bound = number
+      adjustment  = number
+    }))
+  })
+  default = null
+}
+
+variable "memory_scaling_config" {
+  description = "Configuration for memory-based auto-scaling of the ECS service"
+  type = object({
+    enabled             = bool
+    threshold           = number
+    evaluation_periods  = number
+    period              = number
+    scale_up_cooldown   = number
+    scale_down_cooldown = number
+    scale_up_steps = list(object({
+      lower_bound = number
+      upper_bound = number
+      adjustment  = number
+    }))
+    scale_down_steps = list(object({
+      lower_bound = number
+      upper_bound = number
+      adjustment  = number
+    }))
+  })
+  default = null
+}
+
+variable "request_scaling_config" {
+  description = "Configuration for request count-based auto-scaling of the ECS service"
+  type = object({
+    enabled             = bool   # Whether request count scaling is enabled
+    threshold           = number # Request count per target threshold for scaling down
+    evaluation_periods  = number # Number of periods to evaluate the metric
+    period              = number # Length of each evaluation period in seconds
+    scale_up_cooldown   = number # Cooldown period in seconds for scale-up
+    scale_down_cooldown = number # Cooldown period in seconds for scale-down
+    scale_up_steps = list(object({
+      lower_bound = number # Lower bound relative to scale_up_threshold (e.g., 0)
+      upper_bound = number # Upper bound relative to scale_up_threshold (null for no upper limit)
+      adjustment  = number # Number of tasks to add
+    }))
+    scale_down_steps = list(object({
+      lower_bound = number # Lower bound relative to scale_down_threshold (null for no lower limit)
+      upper_bound = number # Upper bound relative to scale_down_threshold (e.g., 0)
+      adjustment  = number # Number of tasks to remove (typically negative)
+    }))
+  })
+  default = null
 }
